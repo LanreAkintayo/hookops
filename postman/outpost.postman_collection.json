@@ -35,6 +35,11 @@
       "key": "eventId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "deliveryId",
+      "value": "",
+      "type": "string"
     }
   ],
   "auth": {
@@ -553,6 +558,103 @@
               "path": ["api", "v1", "events"]
             },
             "description": "Sending the same idempotency key returns the existing event with queued_deliveries = 0 without duplicate delivery."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Deliveries",
+      "item": [
+        {
+          "name": "List Event Deliveries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/deliveries",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "events", "{{eventId}}", "deliveries"]
+            },
+            "description": "Lists all delivery attempts dispatched for a specific event."
+          }
+        },
+        {
+          "name": "List Deliveries (Paginated & Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deliveries?page=1&per_page=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "deliveries"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "delivered",
+                  "disabled": true
+                },
+                {
+                  "key": "endpoint_id",
+                  "value": "{{endpointId}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns a paginated list of deliveries with optional status, endpoint, and date filtering."
+          }
+        },
+        {
+          "name": "Get Delivery Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deliveries/{{deliveryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "deliveries", "{{deliveryId}}"]
+            },
+            "description": "Fetches forensic details of a single delivery attempt including response body and execution duration."
+          }
+        },
+        {
+          "name": "Manual Retry Delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deliveries/{{deliveryId}}/retry",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "deliveries", "{{deliveryId}}", "retry"]
+            },
+            "description": "Resets a failed or dead_letter delivery attempt back to pending state for immediate re-delivery."
           }
         }
       ]

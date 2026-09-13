@@ -104,13 +104,16 @@ func main() {
 	dispatcher := engine.NewDispatcher(deliveryRepo, workerPool, dispatcherCfg, log)
 	dispatcher.Start()
 
+	deliveryService := service.NewDeliveryService(deliveryRepo)
+	deliveryHandler := handler.NewDeliveryHandler(deliveryService)
+
 	// Build HTTP Router (Routing & Middlewares)
 	r := router.New(router.RouterParams{
 		Config:          cfg,
 		Logger:          log,
 		AuthMiddleware:  authMiddleware,
 		PublicRoutes:    []router.RouteRegistrar{appHandler},
-		ProtectedRoutes: []router.RouteRegistrar{authHandler, endpointHandler, eventTypeHandler, subscriptionHandler, eventHandler},
+		ProtectedRoutes: []router.RouteRegistrar{authHandler, endpointHandler, eventTypeHandler, subscriptionHandler, eventHandler, deliveryHandler},
 	})
 
 	// Initialize HTTP Server (Transport Lifecycle)
