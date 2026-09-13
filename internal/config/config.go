@@ -31,6 +31,7 @@ type EngineConfig struct {
 	BatchSize      int
 	MaxRetries     int
 	RetryBaseDelay time.Duration
+	RetryMaxDelay  time.Duration
 }
 
 // Config represents the complete typed configuration for Outpost.
@@ -64,6 +65,7 @@ func Load() (*Config, error) {
 			BatchSize:      getEnvInt("DISPATCHER_BATCH_SIZE", 50),
 			MaxRetries:     getEnvInt("MAX_RETRIES", 5),
 			RetryBaseDelay: getEnvDuration("RETRY_BASE_DELAY", 30*time.Second),
+			RetryMaxDelay:  getEnvDuration("RETRY_MAX_DELAY", 4*time.Hour),
 		},
 	}
 
@@ -106,6 +108,15 @@ func (c *Config) Validate() error {
 	}
 	if c.Engine.MaxRetries < 0 {
 		return fmt.Errorf("MAX_RETRIES cannot be negative")
+	}
+	if c.Engine.RetryBaseDelay <= 0 {
+		return fmt.Errorf("RETRY_BASE_DELAY must be greater than 0")
+	}
+	if c.Engine.RetryMaxDelay <= 0 {
+		return fmt.Errorf("RETRY_MAX_DELAY must be greater than 0")
+	}
+	if c.Engine.RetryMaxDelay < c.Engine.RetryBaseDelay {
+		return fmt.Errorf("RETRY_MAX_DELAY must be greater than or equal to RETRY_BASE_DELAY")
 	}
 	return nil
 }

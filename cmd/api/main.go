@@ -82,25 +82,12 @@ func main() {
 	deliveryRepo := repository.NewPostgresDeliveryRepository(dbPool)
 	deliverer := engine.NewHTTPDeliverer(30 * time.Second)
 
-	onComplete := func(ctx context.Context, task engine.DeliveryTask, result *engine.DeliveryResult) {
-		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		if err := deliveryRepo.RecordResult(writeCtx, task.AttemptID, result); err != nil {
-			log.Error().
-				Err(err).
-				Str("attempt_id", task.AttemptID.String()).
-				Msg("failed to record delivery attempt result in database")
-			return
-		}
-
-		log.Info().
-			Str("attempt_id", task.AttemptID.String()).
-			Str("endpoint_url", task.EndpointURL).
-			Bool("success", result.Success).
-			Int("duration_ms", result.ExecutionDurationMS).
-			Msg("webhook delivery attempt processed")
+	retryCfg := engine.RetryConfig{
+		BaseDelay:  cfg.Engine.RetryBaseDelay,
+		MaxDelay:   cfg.Engine.RetryMaxDelay,
+		MaxRetries: cfg.Engine.MaxRetries,
 	}
+	onComplete := engine.NewResultRecorder(deliveryRepo, retryCfg, log)
 
 	workerPool := engine.NewWorkerPool(cfg.Engine.WorkerCount, cfg.Engine.QueueSize, deliverer, onComplete)
 	workerPool.Start()

@@ -20,3 +20,8 @@ CREATE INDEX IF NOT EXISTS idx_delivery_attempts_created_at ON delivery_attempts
 CREATE INDEX IF NOT EXISTS idx_delivery_attempts_dispatcher 
     ON delivery_attempts(next_retry_at) 
     WHERE status = 'pending';
+
+CREATE INDEX IF NOT EXISTS idx_delivery_attempts_stale_processing 
+    ON delivery_attempts(updated_at) 
+    WHERE status = 'processing';
+

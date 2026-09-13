@@ -1,0 +1,561 @@
+{
+  "info": {
+    "_postman_id": "outpost-engine-api-collection",
+    "name": "Outpost Webhook Engine",
+    "description": "Comprehensive Postman Collection for Outpost: multi-tenant webhook dispatching and ingestion engine.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "endpointId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventTypeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "00 - Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Applications",
+      "item": [
+        {
+          "name": "Create Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.api_key) {",
+                  "        pm.collectionVariables.set('apiKey', json.api_key);",
+                  "        console.log('Saved apiKey to collection variable:', json.api_key);",
+                  "    }",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('appId', json.id);",
+                  "        console.log('Saved appId to collection variable:', json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PayNova\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/applications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "applications"]
+            },
+            "description": "Creates a new tenant application and auto-saves the generated API key and Application ID into collection variables."
+          }
+        },
+        {
+          "name": "Get Application by ID",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/applications/{{appId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "applications", "{{appId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Auth",
+      "item": [
+        {
+          "name": "Verify API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify"]
+            },
+            "description": "Tests the Bearer API Key authentication against Outpost."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Event Types",
+      "item": [
+        {
+          "name": "Create Event Type (payment.succeeded)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('eventTypeId', json.id);",
+                  "        console.log('Saved eventTypeId to collection variable:', json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"payment.succeeded\",\n  \"description\": \"Triggered when a charge is captured\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "event-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Event Type (payment.failed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"payment.failed\",\n  \"description\": \"Triggered when a customer card payment fails\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "event-types"]
+            }
+          }
+        },
+        {
+          "name": "List Event Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "event-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Event Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/event-types/{{eventTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "event-types", "{{eventTypeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Event Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/event-types/{{eventTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "event-types", "{{eventTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Endpoints",
+      "item": [
+        {
+          "name": "Create Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('endpointId', json.id);",
+                  "        console.log('Saved endpointId to collection variable:', json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://webhook.site/YOUR-UUID-HERE\",\n  \"description\": \"Acme Fulfillment Webhook\",\n  \"recipient_id\": \"merchant_acme_01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints"]
+            }
+          }
+        },
+        {
+          "name": "List Endpoints",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints"]
+            }
+          }
+        },
+        {
+          "name": "Get Endpoint by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Endpoint",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Acme Fulfillment (Active)\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Endpoint",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Subscriptions",
+      "item": [
+        {
+          "name": "Subscribe Endpoint to Event Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type_id\": \"{{eventTypeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}", "subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "List Subscriptions for Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}", "subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe Endpoint from Event Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/endpoints/{{endpointId}}/subscriptions/{{eventTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "endpoints", "{{endpointId}}", "subscriptions", "{{eventTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Events (Ingest & Delivery)",
+      "item": [
+        {
+          "name": "Ingest Event (202 Accepted)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('eventId', json.id);",
+                  "        console.log('Saved eventId to collection variable:', json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"payment.succeeded\",\n  \"recipient_id\": \"merchant_acme_01\",\n  \"payload\": {\n    \"order_id\": \"ord_acme_1001\",\n    \"amount\": 14999,\n    \"currency\": \"USD\",\n    \"customer\": {\n      \"name\": \"Sarah Connor\",\n      \"email\": \"sarah@example.com\"\n    }\n  },\n  \"idempotency_key\": \"tx_order_acme_1001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "events"]
+            },
+            "description": "Ingests a webhook event into Outpost. Asynchronously fans out to all matching subscribed endpoints."
+          }
+        },
+        {
+          "name": "Get Event Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "events", "{{eventId}}"]
+            }
+          }
+        },
+        {
+          "name": "Idempotency Duplicate Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"payment.succeeded\",\n  \"recipient_id\": \"merchant_acme_01\",\n  \"payload\": {\n    \"order_id\": \"ord_acme_1001\",\n    \"amount\": 14999\n  },\n  \"idempotency_key\": \"tx_order_acme_1001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "events"]
+            },
+            "description": "Sending the same idempotency key returns the existing event with queued_deliveries = 0 without duplicate delivery."
+          }
+        }
+      ]
+    }
+  ]
+}

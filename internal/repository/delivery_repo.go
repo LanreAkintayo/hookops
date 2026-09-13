@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/LanreAkintayo/outpost/internal/engine"
-	"github.com/LanreAkintayo/outpost/internal/models"
 )
 
 var (
@@ -21,8 +20,8 @@ type DeliveryRepository interface {
 	// FetchAndClaimPending atomically selects pending (or stale processing) delivery attempts
 	FetchAndClaimPending(ctx context.Context, batchSize int) ([]engine.DeliveryTask, error)
 
-	// RecordResult updates the delivery attempt record with the outcome of an HTTP execution attempt.
-	RecordResult(ctx context.Context, attemptID uuid.UUID, result *engine.DeliveryResult) error
+	// RecordOutcome persists the full outcome of an attempt including status transitions, retry scheduling, and metrics.
+	RecordOutcome(ctx context.Context, outcome engine.OutcomeRecord) error
 
 	// RevertToPending safely transitions in-flight claimed tasks back to 'pending' if the worker queue is saturated.
 	RevertToPending(ctx context.Context, attemptIDs []uuid.UUID) error
@@ -49,7 +48,7 @@ func (r *PostgresDeliveryRepository) FetchAndClaimPending(ctx context.Context, b
 			SELECT da.id
 			FROM delivery_attempts da
 			JOIN endpoints ep ON da.endpoint_id = ep.id
-			WHERE ep.is_active = true
+			WHERE ep.status = 'active'
 			  AND (
 				  (da.status = 'pending' AND (da.next_retry_at IS NULL OR da.next_retry_at <= NOW()))
 				  OR
@@ -113,38 +112,33 @@ func (r *PostgresDeliveryRepository) FetchAndClaimPending(ctx context.Context, b
 	return tasks, nil
 }
 
-// RecordResult writes the HTTP outcome (status, response, duration, error) to the delivery_attempts table.
-func (r *PostgresDeliveryRepository) RecordResult(ctx context.Context, attemptID uuid.UUID, result *engine.DeliveryResult) error {
-	if result == nil {
-		return errors.New("result cannot be nil")
-	}
-
-	status := models.DeliveryStatusDelivered
-	if !result.Success {
-		status = models.DeliveryStatusFailed
-	}
-
+// RecordOutcome persists the full outcome of an attempt including status transitions, retry scheduling, and metrics.
+func (r *PostgresDeliveryRepository) RecordOutcome(ctx context.Context, outcome engine.OutcomeRecord) error {
 	query := `
 		UPDATE delivery_attempts
 		SET status = $2,
-		    http_status = $3,
-		    response_body = $4,
-		    error_message = $5,
-		    execution_duration_ms = $6,
+		    attempt_number = $3,
+		    next_retry_at = $4,
+		    http_status = $5,
+		    response_body = $6,
+		    error_message = $7,
+		    execution_duration_ms = $8,
 		    updated_at = NOW()
 		WHERE id = $1
 	`
 
 	cmdTag, err := r.db.Exec(ctx, query,
-		attemptID,
-		status,
-		result.HTTPStatus,
-		result.ResponseBody,
-		result.ErrorMessage,
-		result.ExecutionDurationMS,
+		outcome.AttemptID,
+		outcome.Status,
+		outcome.AttemptNumber,
+		outcome.NextRetryAt,
+		outcome.HTTPStatus,
+		outcome.ResponseBody,
+		outcome.ErrorMessage,
+		outcome.ExecutionDurationMS,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to update delivery attempt status: %w", err)
+		return fmt.Errorf("failed to update delivery attempt outcome: %w", err)
 	}
 
 	if cmdTag.RowsAffected() == 0 {
