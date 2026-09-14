@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -27,9 +28,11 @@ const (
 type DeliveryTask struct {
 	AttemptID     uuid.UUID
 	EventID       uuid.UUID
+	EndpointID    uuid.UUID
 	EventType     string
 	EndpointURL   string
 	Secret        string
+	RateLimit     int
 	Payload       []byte
 	AttemptNumber int
 }
@@ -48,6 +51,7 @@ type workerPool struct {
 	workerCount int
 	taskQueue   chan DeliveryTask
 	deliverer   Deliverer
+	limiter     RateLimiter
 	onComplete  TaskResultHandler
 
 	wg        sync.WaitGroup
@@ -56,8 +60,8 @@ type workerPool struct {
 	isClosed  atomic.Bool
 }
 
-// NewWorkerPool constructs a new bounded WorkerPool.
-func NewWorkerPool(workerCount int, queueSize int, deliverer Deliverer, onComplete TaskResultHandler) WorkerPool {
+// NewWorkerPool constructs a new bounded WorkerPool with optional rate-limiting and completion hooks.
+func NewWorkerPool(workerCount int, queueSize int, deliverer Deliverer, limiter RateLimiter, onComplete TaskResultHandler) WorkerPool {
 	if workerCount <= 0 {
 		workerCount = DefaultWorkerCount
 	}
@@ -69,6 +73,7 @@ func NewWorkerPool(workerCount int, queueSize int, deliverer Deliverer, onComple
 		workerCount: workerCount,
 		taskQueue:   make(chan DeliveryTask, queueSize),
 		deliverer:   deliverer,
+		limiter:     limiter,
 		onComplete:  onComplete,
 	}
 }
@@ -108,6 +113,7 @@ func (p *workerPool) workerLoop(workerID int) {
 }
 
 // processTaskSafely executes the delivery with a panic-recovery boundary.
+// If an endpoint has an active rate limit, the worker paces itself before sending.
 func (p *workerPool) processTaskSafely(workerID int, task DeliveryTask) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -123,6 +129,25 @@ func (p *workerPool) processTaskSafely(workerID int, task DeliveryTask) {
 			}
 		}
 	}()
+
+	// Respect endpoint rate limit if configured.
+	// We use a 10s safety timeout to prevent permanent worker stalls if downstream is unresponsive.
+	if p.limiter != nil && task.RateLimit > 0 {
+		waitCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := p.limiter.Wait(waitCtx, task.EndpointID, task.RateLimit); err != nil {
+			errMsg := fmt.Sprintf("rate limit wait aborted: %v", err)
+			errResult := &DeliveryResult{
+				Success:      false,
+				ErrorMessage: &errMsg,
+			}
+			if p.onComplete != nil {
+				p.onComplete(context.Background(), task, errResult)
+			}
+			return
+		}
+	}
 
 	req := DeliveryRequest{
 		EventID:     task.EventID,

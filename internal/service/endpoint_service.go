@@ -16,16 +16,21 @@ import (
 )
 
 var (
-	ErrInvalidURL    = errors.New("url must be a valid http or https URL")
-	ErrInvalidStatus = errors.New("status must be active or inactive")
+	ErrInvalidURL       = errors.New("url must be a valid http or https URL")
+	ErrInvalidStatus    = errors.New("status must be active or inactive")
+	ErrInvalidRateLimit = errors.New("rate limit must be between 1 and 1000 requests per second")
 )
 
-const webhookSecretPrefix = "whsec_"
+const (
+	webhookSecretPrefix = "whsec_"
+	defaultRateLimit    = 10
+)
 
 type CreateEndpointParams struct {
 	URL         string
 	Description string
 	RecipientID string
+	RateLimit   *int
 }
 
 type UpdateEndpointParams struct {
@@ -33,6 +38,7 @@ type UpdateEndpointParams struct {
 	Description *string
 	Status      *models.EndpointStatus
 	RecipientID *string
+	RateLimit   *int
 }
 
 type EndpointService interface {
@@ -52,10 +58,19 @@ func NewEndpointService(repo repository.EndpointRepository) EndpointService {
 }
 
 // CreateEndpoint validates parameters, generates a cryptographic signing secret, and creates the endpoint.
+// It assigns a default rate limit of 10 requests/sec if unspecified.
 func (s *endpointService) CreateEndpoint(ctx context.Context, appID uuid.UUID, params CreateEndpointParams) (*models.Endpoint, error) {
 	trimmedURL := strings.TrimSpace(params.URL)
 	if err := validateURL(trimmedURL); err != nil {
 		return nil, err
+	}
+
+	rateLimit := defaultRateLimit
+	if params.RateLimit != nil {
+		if *params.RateLimit < 1 || *params.RateLimit > 1000 {
+			return nil, ErrInvalidRateLimit
+		}
+		rateLimit = *params.RateLimit
 	}
 
 	secret, err := generateWebhookSecret()
@@ -70,6 +85,7 @@ func (s *endpointService) CreateEndpoint(ctx context.Context, appID uuid.UUID, p
 		Description:   strings.TrimSpace(params.Description),
 		Status:        models.EndpointStatusActive,
 		RecipientID:   strings.TrimSpace(params.RecipientID),
+		RateLimit:     rateLimit,
 	}
 
 	if err := s.repo.Create(ctx, endpoint); err != nil {
@@ -126,6 +142,13 @@ func (s *endpointService) UpdateEndpoint(ctx context.Context, appID, id uuid.UUI
 
 	if params.RecipientID != nil {
 		endpoint.RecipientID = strings.TrimSpace(*params.RecipientID)
+	}
+
+	if params.RateLimit != nil {
+		if *params.RateLimit < 1 || *params.RateLimit > 1000 {
+			return nil, ErrInvalidRateLimit
+		}
+		endpoint.RateLimit = *params.RateLimit
 	}
 
 	if err := s.repo.Update(ctx, endpoint); err != nil {

@@ -56,7 +56,7 @@ func TestWorkerPool_ConcurrentProcessing(t *testing.T) {
 		}
 	}
 
-	pool := engine.NewWorkerPool(workerCount, 30, mockDeliverer, onComplete)
+	pool := engine.NewWorkerPool(workerCount, 30, mockDeliverer, nil, onComplete)
 	pool.Start()
 
 	for i := 0; i < totalTasks; i++ {
@@ -106,7 +106,7 @@ func TestWorkerPool_PanicResilience(t *testing.T) {
 		}
 	}
 
-	pool := engine.NewWorkerPool(2, 10, mockDeliverer, onComplete)
+	pool := engine.NewWorkerPool(2, 10, mockDeliverer, nil, onComplete)
 	pool.Start()
 
 	tasks := []engine.DeliveryTask{
@@ -141,13 +141,13 @@ func TestWorkerPool_GracefulShutdown(t *testing.T) {
 		return &engine.DeliveryResult{HTTPStatus: &status, Success: true}
 	})
 
-	pool := engine.NewWorkerPool(2, 10, mockDeliverer, nil)
+	pool := engine.NewWorkerPool(2, 10, mockDeliverer, nil, nil)
 	pool.Start()
 
 	for i := 0; i < 4; i++ {
 		err := pool.Enqueue(context.Background(), engine.DeliveryTask{
 			AttemptID: uuid.New(),
-			Payload:   []byte(fmt.Sprintf(`{"id":%d}`, i)),
+			Payload:   fmt.Appendf(nil, `{"id":%d}`, i),
 		})
 		require.NoError(t, err)
 	}
@@ -168,7 +168,7 @@ func TestWorkerPool_GracefulShutdown(t *testing.T) {
 
 func TestWorkerPool_EnqueueContextCancelled(t *testing.T) {
 	// Pool with queue size 1, unstarted so nothing drains
-	pool := engine.NewWorkerPool(1, 1, mockDelivererFunc(nil), nil)
+	pool := engine.NewWorkerPool(1, 1, mockDelivererFunc(nil), nil, nil)
 
 	// Task 1 fills the queue
 	err := pool.Enqueue(context.Background(), engine.DeliveryTask{AttemptID: uuid.New()})

@@ -8,6 +8,8 @@ require (
 	github.com/stretchr/testify v1.12.1
 )
 
+require golang.org/x/time v0.16.0 // indirect
+
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect

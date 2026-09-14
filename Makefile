@@ -17,8 +17,10 @@ migrate-up:
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/004_create_subscriptions_table.up.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/005_create_events_table.up.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/006_create_delivery_attempts_table.up.sql
+	docker exec -i outpost-db psql -U postgres -d outpost < migrations/007_add_rate_limit_to_endpoints.up.sql
 
 migrate-down:
+	docker exec -i outpost-db psql -U postgres -d outpost < migrations/007_add_rate_limit_to_endpoints.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/006_create_delivery_attempts_table.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/005_create_events_table.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/004_create_subscriptions_table.down.sql

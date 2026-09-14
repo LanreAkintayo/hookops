@@ -56,10 +56,11 @@ func (h *EndpointHandler) Create(c *gin.Context) {
 			URL:         req.URL,
 			Description: req.Description,
 			RecipientID: req.RecipientID,
+			RateLimit:   req.RateLimit,
 		})
 
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidURL) {
+		if errors.Is(err, service.ErrInvalidURL) || errors.Is(err, service.ErrInvalidRateLimit) {
 			response.BadRequest(c, err.Error())
 			return
 		}
@@ -145,6 +146,7 @@ func (h *EndpointHandler) Update(c *gin.Context) {
 			Description: req.Description,
 			Status:      req.Status,
 			RecipientID: req.RecipientID,
+			RateLimit:   req.RateLimit,
 		})
 
 	if err != nil {
@@ -152,7 +154,7 @@ func (h *EndpointHandler) Update(c *gin.Context) {
 			response.NotFound(c, "endpoint not found")
 			return
 		}
-		if errors.Is(err, service.ErrInvalidURL) || errors.Is(err, service.ErrInvalidStatus) {
+		if errors.Is(err, service.ErrInvalidURL) || errors.Is(err, service.ErrInvalidStatus) || errors.Is(err, service.ErrInvalidRateLimit) {
 			response.BadRequest(c, err.Error())
 			return
 		}

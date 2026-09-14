@@ -92,9 +92,11 @@ func (r *PostgresDeliveryRepository) FetchAndClaimPending(ctx context.Context, b
 		SELECT 
 			c.id,
 			c.event_id,
+			c.endpoint_id,
 			et.name,
 			ep.url,
 			ep.secret,
+			ep.rate_limit,
 			e.payload,
 			c.attempt_number
 		FROM claimed c
@@ -116,9 +118,11 @@ func (r *PostgresDeliveryRepository) FetchAndClaimPending(ctx context.Context, b
 		err := rows.Scan(
 			&task.AttemptID,
 			&task.EventID,
+			&task.EndpointID,
 			&task.EventType,
 			&task.EndpointURL,
 			&task.Secret,
+			&task.RateLimit,
 			&task.Payload,
 			&task.AttemptNumber,
 		)

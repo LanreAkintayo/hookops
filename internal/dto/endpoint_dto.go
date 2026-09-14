@@ -9,10 +9,12 @@ import (
 )
 
 // CreateEndpointRequest defines the expected JSON payload for creating an endpoint.
+// If rate_limit is omitted, the service will default it to 10 requests/second.
 type CreateEndpointRequest struct {
 	URL         string `json:"url" binding:"required"`
 	Description string `json:"description" binding:"max=500"`
 	RecipientID string `json:"recipient_id" binding:"max=255"`
+	RateLimit   *int   `json:"rate_limit,omitempty" binding:"omitempty,min=1,max=1000"`
 }
 
 // UpdateEndpointRequest defines the expected JSON payload for modifying an endpoint.
@@ -21,6 +23,7 @@ type UpdateEndpointRequest struct {
 	Description *string                `json:"description,omitempty"`
 	Status      *models.EndpointStatus `json:"status,omitempty"`
 	RecipientID *string                `json:"recipient_id,omitempty"`
+	RateLimit   *int                   `json:"rate_limit,omitempty" binding:"omitempty,min=1,max=1000"`
 }
 
 // EndpointResponse represents the public API response for an endpoint.
@@ -32,6 +35,7 @@ type EndpointResponse struct {
 	Description   string                `json:"description"`
 	Status        models.EndpointStatus `json:"status"`
 	RecipientID   string                `json:"recipient_id"`
+	RateLimit     int                   `json:"rate_limit"`
 	CreatedAt     time.Time             `json:"created_at"`
 	UpdatedAt     time.Time             `json:"updated_at"`
 }
@@ -46,6 +50,7 @@ func ToEndpointResponse(e *models.Endpoint) EndpointResponse {
 		Description:   e.Description,
 		Status:        e.Status,
 		RecipientID:   e.RecipientID,
+		RateLimit:     e.RateLimit,
 		CreatedAt:     e.CreatedAt,
 		UpdatedAt:     e.UpdatedAt,
 	}

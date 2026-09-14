@@ -194,4 +194,55 @@ func TestEndpointService(t *testing.T) {
 		_, err = svc.GetEndpoint(ctx, appID, ep.ID)
 		assert.ErrorIs(t, err, repository.ErrEndpointNotFound)
 	})
+
+	t.Run("applies default rate limit of 10 and enforces bounds", func(t *testing.T) {
+		repo := newMockEndpointRepo()
+		svc := service.NewEndpointService(repo)
+
+		// Default when nil
+		epDefault, err := svc.CreateEndpoint(ctx, appID, service.CreateEndpointParams{
+			URL: "https://example.com/webhook",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 10, epDefault.RateLimit)
+
+		// Custom valid rate limit
+		customRate := 50
+		epCustom, err := svc.CreateEndpoint(ctx, appID, service.CreateEndpointParams{
+			URL:       "https://example.com/webhook2",
+			RateLimit: &customRate,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 50, epCustom.RateLimit)
+
+		// Rejects rate limit < 1
+		zeroRate := 0
+		_, err = svc.CreateEndpoint(ctx, appID, service.CreateEndpointParams{
+			URL:       "https://example.com/webhook3",
+			RateLimit: &zeroRate,
+		})
+		assert.ErrorIs(t, err, service.ErrInvalidRateLimit)
+
+		// Rejects rate limit > 1000
+		hugeRate := 1001
+		_, err = svc.CreateEndpoint(ctx, appID, service.CreateEndpointParams{
+			URL:       "https://example.com/webhook4",
+			RateLimit: &hugeRate,
+		})
+		assert.ErrorIs(t, err, service.ErrInvalidRateLimit)
+
+		// Update rate limit successfully
+		newRate := 25
+		updated, err := svc.UpdateEndpoint(ctx, appID, epDefault.ID, service.UpdateEndpointParams{
+			RateLimit: &newRate,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 25, updated.RateLimit)
+
+		// Update rejects invalid rate limit
+		_, err = svc.UpdateEndpoint(ctx, appID, epDefault.ID, service.UpdateEndpointParams{
+			RateLimit: &zeroRate,
+		})
+		assert.ErrorIs(t, err, service.ErrInvalidRateLimit)
+	})
 }

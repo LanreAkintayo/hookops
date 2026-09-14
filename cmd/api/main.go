@@ -89,7 +89,8 @@ func main() {
 	}
 	onComplete := engine.NewResultRecorder(deliveryRepo, retryCfg, log)
 
-	workerPool := engine.NewWorkerPool(cfg.Engine.WorkerCount, cfg.Engine.QueueSize, deliverer, onComplete)
+	rateLimiter := engine.NewEndpointRateLimiter()
+	workerPool := engine.NewWorkerPool(cfg.Engine.WorkerCount, cfg.Engine.QueueSize, deliverer, rateLimiter, onComplete)
 	workerPool.Start()
 	log.Info().
 		Int("workers", cfg.Engine.WorkerCount).

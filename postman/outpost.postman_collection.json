@@ -563,10 +563,27 @@
       ]
     },
     {
-      "name": "06 - Deliveries",
+      "name": "07 - Deliveries",
       "item": [
         {
           "name": "List Event Deliveries",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (Array.isArray(json) && json.length > 0 && json[0].id) {",
+                  "        pm.collectionVariables.set('deliveryId', json[0].id);",
+                  "        console.log('Saved deliveryId to collection variable:', json[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -585,6 +602,23 @@
         },
         {
           "name": "List Deliveries (Paginated & Filtered)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && Array.isArray(json.data) && json.data.length > 0 && json.data[0].id) {",
+                  "        pm.collectionVariables.set('deliveryId', json.data[0].id);",
+                  "        console.log('Saved deliveryId to collection variable:', json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -608,7 +642,7 @@
                 },
                 {
                   "key": "status",
-                  "value": "delivered",
+                  "value": "failed",
                   "disabled": true
                 },
                 {
