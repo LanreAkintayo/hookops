@@ -32,6 +32,17 @@ func (h *ApplicationHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 // Create handles POST /api/v1/applications
+// @Summary      Create application
+// @Description  Register a new tenant application and generate an API key (op_live_...)
+// @Tags         Applications
+// @Accept       json
+// @Produce      json
+// @Param        request  body      dto.CreateApplicationRequest  true  "Application payload"
+// @Success      201      {object}  dto.ApplicationResponse
+// @Failure      400      {object}  response.ErrorResponse
+// @Failure      409      {object}  response.ErrorResponse
+// @Failure      500      {object}  response.ErrorResponse
+// @Router       /api/v1/applications [post]
 func (h *ApplicationHandler) Create(c *gin.Context) {
 	var req dto.CreateApplicationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -59,6 +70,16 @@ func (h *ApplicationHandler) Create(c *gin.Context) {
 }
 
 // GetByID handles GET /api/v1/applications/:id
+// @Summary      Get application by ID
+// @Description  Fetch application details by UUID
+// @Tags         Applications
+// @Produce      json
+// @Param        id   path      string  true  "Application UUID" format(uuid)
+// @Success      200  {object}  dto.ApplicationResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/applications/{id} [get]
 func (h *ApplicationHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)

@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	ErrDeliveryNotFound   = errors.New("delivery attempt not found")
-	ErrInvalidDeliveryID = errors.New("invalid delivery ID: must be a valid UUID")
-	ErrInvalidEventID    = errors.New("invalid event ID: must be a valid UUID")
-	ErrCannotRetry        = errors.New("cannot retry delivery: must be in failed or dead_letter status")
+	ErrDeliveryNotFound     = errors.New("delivery attempt not found")
+	ErrInvalidDeliveryID   = errors.New("invalid delivery ID: must be a valid UUID")
+	ErrInvalidEventID      = errors.New("invalid event ID: must be a valid UUID")
+	ErrCannotRetry          = errors.New("cannot retry delivery: must be in failed or dead_letter status")
+	ErrInvalidReplayStatus  = errors.New("replay status filter must be 'failed' or 'dead_letter'")
 )
 
 // ListDeliveriesParams encapsulates filtering and pagination parameters for delivery queries.
@@ -29,12 +30,21 @@ type ListDeliveriesParams struct {
 	PerPage    int
 }
 
+// BatchReplayParams encapsulates query filters for replaying multiple failed deliveries.
+type BatchReplayParams struct {
+	Status     *models.DeliveryStatus
+	EndpointID *uuid.UUID
+	From       *time.Time
+	To         *time.Time
+}
+
 // DeliveryService defines the domain interface for inspecting delivery logs and manual retries.
 type DeliveryService interface {
 	ListDeliveriesByEvent(ctx context.Context, appID, eventID uuid.UUID) ([]*models.DeliveryAttempt, error)
 	ListDeliveries(ctx context.Context, appID uuid.UUID, params ListDeliveriesParams) ([]*models.DeliveryAttempt, int64, error)
 	GetDelivery(ctx context.Context, appID, deliveryID uuid.UUID) (*models.DeliveryAttempt, error)
 	ManualRetry(ctx context.Context, appID, deliveryID uuid.UUID) (*models.DeliveryAttempt, error)
+	BatchReplay(ctx context.Context, appID uuid.UUID, params BatchReplayParams) (int, error)
 }
 
 type deliveryService struct {
@@ -125,4 +135,22 @@ func (s *deliveryService) ManualRetry(ctx context.Context, appID, deliveryID uui
 	}
 
 	return attempt, nil
+}
+
+// BatchReplay creates fresh delivery attempts for matching failed deliveries.
+func (s *deliveryService) BatchReplay(ctx context.Context, appID uuid.UUID, params BatchReplayParams) (int, error) {
+	if params.Status != nil {
+		if *params.Status != models.DeliveryStatusFailed && *params.Status != models.DeliveryStatusDeadLetter {
+			return 0, ErrInvalidReplayStatus
+		}
+	}
+
+	filter := repository.DeliveryFilter{
+		Status:     params.Status,
+		EndpointID: params.EndpointID,
+		From:       params.From,
+		To:         params.To,
+	}
+
+	return s.deliveryRepo.BatchReplay(ctx, appID, filter)
 }

@@ -1,22 +1,21 @@
 # Multi-stage Dockerfile for Outpost
 
 # Stage 1: Build stage with full Go toolchain
-FROM golang:1.24-alpine AS builder
+FROM golang:alpine AS builder
+
+ENV GOTOOLCHAIN=auto
 
 WORKDIR /app
 
-# Install git for module downloading if needed
-RUN apk add --no-cache git
-
-# Cache dependencies
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy application source code
+# Copy all source code (including vendor if present)
 COPY . .
 
-# Compile optimized static binary
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bin/api cmd/api/main.go
+# Compile optimized static binary (uses vendor if present, otherwise downloads modules)
+RUN if [ -d "vendor" ]; then \
+        CGO_ENABLED=0 GOOS=linux go build -mod=vendor -ldflags="-w -s" -o /app/bin/api cmd/api/main.go; \
+    else \
+        CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bin/api cmd/api/main.go; \
+    fi
 
 # Stage 2: Minimal runtime image
 FROM alpine:3.20

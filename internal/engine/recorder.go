@@ -10,7 +10,7 @@ import (
 	"github.com/LanreAkintayo/outpost/internal/models"
 )
 
-// OutcomeRecord encapsulates the state, metrics, and retry schedule to persist for a completed delivery attempt.
+// OutcomeRecord holds the delivery result and retry schedule to be saved.
 type OutcomeRecord struct {
 	AttemptID           uuid.UUID
 	Status              models.DeliveryStatus
@@ -22,15 +22,24 @@ type OutcomeRecord struct {
 	ExecutionDurationMS int
 }
 
-// OutcomeRecorder abstracts the persistence layer for recording delivery attempt outcomes.
-// This interface is satisfied by repository.PostgresDeliveryRepository.
+// OutcomeRecorder persists delivery attempt outcomes to the database.
 type OutcomeRecorder interface {
 	RecordOutcome(ctx context.Context, outcome OutcomeRecord) error
 }
 
-// NewResultRecorder constructs a TaskResultHandler that handles delivery failure classification,
-// exponential backoff calculation with jitter, dead-letter queue routing, and outcome persistence.
-func NewResultRecorder(recorder OutcomeRecorder, retryCfg RetryConfig, log zerolog.Logger) TaskResultHandler {
+// EndpointHealthRecorder updates endpoint delivery stats and circuit breaker status.
+type EndpointHealthRecorder interface {
+	RecordDeliveryResult(ctx context.Context, endpointID uuid.UUID, success bool, maxFailures int) (bool, error)
+}
+
+// NewResultRecorder returns a handler that logs attempt outcomes, schedules retries, and monitors endpoint health.
+func NewResultRecorder(
+	recorder OutcomeRecorder,
+	healthRecorder EndpointHealthRecorder,
+	maxFailures int,
+	retryCfg RetryConfig,
+	log zerolog.Logger,
+) TaskResultHandler {
 	return func(ctx context.Context, task DeliveryTask, result *DeliveryResult) {
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -42,9 +51,8 @@ func NewResultRecorder(recorder OutcomeRecorder, retryCfg RetryConfig, log zerol
 		if result.Success {
 			status = models.DeliveryStatusDelivered
 		} else {
-			// Check if failure is retryable
 			if !IsRetryable(result.HTTPStatus) {
-				// Permanent client failure (e.g. 4xx)
+				// Don't retry client errors like 400 or 404
 				status = models.DeliveryStatusFailed
 				log.Warn().
 					Str("attempt_id", task.AttemptID.String()).
@@ -53,7 +61,7 @@ func NewResultRecorder(recorder OutcomeRecorder, retryCfg RetryConfig, log zerol
 					Interface("http_status", result.HTTPStatus).
 					Msg("permanent delivery failure (non-retryable client error)")
 			} else if task.AttemptNumber >= retryCfg.MaxRetries {
-				// Exhausted max retry attempts -> transition to dead-letter queue
+				// Out of retries, send to the dead-letter queue
 				status = models.DeliveryStatusDeadLetter
 				log.Warn().
 					Str("attempt_id", task.AttemptID.String()).
@@ -62,7 +70,7 @@ func NewResultRecorder(recorder OutcomeRecorder, retryCfg RetryConfig, log zerol
 					Int("max_retries", retryCfg.MaxRetries).
 					Msg("webhook delivery exhausted max retries, moved to dead-letter queue")
 			} else {
-				// Retryable failure -> calculate exponential backoff with jitter
+				// Schedule another attempt with backoff
 				status = models.DeliveryStatusPending
 				nextAttemptNumber = task.AttemptNumber + 1
 				delay := CalculateNextRetry(task.AttemptNumber, retryCfg)
@@ -97,6 +105,23 @@ func NewResultRecorder(recorder OutcomeRecorder, retryCfg RetryConfig, log zerol
 				Str("attempt_id", task.AttemptID.String()).
 				Msg("failed to record delivery attempt outcome in database")
 			return
+		}
+
+		// Update endpoint health and disable it if it crossed the failure threshold
+		if healthRecorder != nil && task.EndpointID != uuid.Nil {
+			tripped, err := healthRecorder.RecordDeliveryResult(writeCtx, task.EndpointID, result.Success, maxFailures)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Str("endpoint_id", task.EndpointID.String()).
+					Msg("failed to update endpoint health tracking")
+			} else if tripped {
+				log.Warn().
+					Str("endpoint_id", task.EndpointID.String()).
+					Str("endpoint_url", task.EndpointURL).
+					Int("max_consecutive_failures", maxFailures).
+					Msg("circuit breaker tripped: endpoint automatically disabled due to consecutive delivery failures")
+			}
 		}
 
 		log.Info().

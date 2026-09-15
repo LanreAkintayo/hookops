@@ -90,10 +90,64 @@ func (m *mockDeliveryRepo) ManualRetry(ctx context.Context, appID, deliveryID uu
 	d.ErrorMessage = nil
 	d.HTTPStatus = nil
 	d.ResponseBody = nil
+	d.Status = models.DeliveryStatusPending
+	d.AttemptNumber = 1
+	d.NextRetryAt = nil
+	d.ErrorMessage = nil
+	d.HTTPStatus = nil
+	d.ResponseBody = nil
 	d.ExecutionDurationMS = nil
 	d.UpdatedAt = time.Now()
 
 	return d, nil
+}
+
+func (m *mockDeliveryRepo) CreateAttempts(ctx context.Context, attempts []*models.DeliveryAttempt) error {
+	for _, a := range attempts {
+		if a.ID == uuid.Nil {
+			a.ID = uuid.New()
+		}
+		a.CreatedAt = time.Now()
+		a.UpdatedAt = time.Now()
+		m.deliveries[a.ID] = a
+	}
+	return nil
+}
+
+func (m *mockDeliveryRepo) ReplayFailedAttemptsByEvent(ctx context.Context, appID, eventID uuid.UUID) ([]*models.DeliveryAttempt, error) {
+	var replayed []*models.DeliveryAttempt
+	for _, d := range m.deliveries {
+		if d.EventID == eventID && (d.Status == models.DeliveryStatusFailed || d.Status == models.DeliveryStatusDeadLetter) {
+			newAtt := &models.DeliveryAttempt{
+				ID:            uuid.New(),
+				EventID:       eventID,
+				EndpointID:    d.EndpointID,
+				Status:        models.DeliveryStatusPending,
+				AttemptNumber: 1,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+			}
+			m.deliveries[newAtt.ID] = newAtt
+			replayed = append(replayed, newAtt)
+		}
+	}
+	return replayed, nil
+}
+
+func (m *mockDeliveryRepo) BatchReplay(ctx context.Context, appID uuid.UUID, filter repository.DeliveryFilter) (int, error) {
+	count := 0
+	for _, d := range m.deliveries {
+		if filter.Status != nil && d.Status != *filter.Status {
+			continue
+		}
+		if filter.EndpointID != nil && d.EndpointID != *filter.EndpointID {
+			continue
+		}
+		if d.Status == models.DeliveryStatusFailed || d.Status == models.DeliveryStatusDeadLetter {
+			count++
+		}
+	}
+	return count, nil
 }
 
 func TestDeliveryService_ListDeliveriesByEvent(t *testing.T) {
@@ -267,5 +321,57 @@ func TestDeliveryService_ManualRetry(t *testing.T) {
 	t.Run("rejects nil delivery ID", func(t *testing.T) {
 		_, err := svc.ManualRetry(ctx, appID, uuid.Nil)
 		assert.ErrorIs(t, err, service.ErrInvalidDeliveryID)
+	})
+}
+
+func TestDeliveryService_BatchReplay(t *testing.T) {
+	ctx := context.Background()
+	appID := uuid.New()
+	endpointA := uuid.New()
+
+	repo := newMockDeliveryRepo()
+	svc := service.NewDeliveryService(repo)
+
+	// Seed failed and dead_letter deliveries
+	repo.deliveries[uuid.New()] = &models.DeliveryAttempt{
+		ID:         uuid.New(),
+		EventID:    uuid.New(),
+		EndpointID: endpointA,
+		Status:     models.DeliveryStatusFailed,
+	}
+	repo.deliveries[uuid.New()] = &models.DeliveryAttempt{
+		ID:         uuid.New(),
+		EventID:    uuid.New(),
+		EndpointID: endpointA,
+		Status:     models.DeliveryStatusDeadLetter,
+	}
+	repo.deliveries[uuid.New()] = &models.DeliveryAttempt{
+		ID:         uuid.New(),
+		EventID:    uuid.New(),
+		EndpointID: endpointA,
+		Status:     models.DeliveryStatusDelivered,
+	}
+
+	t.Run("successfully replays all failed and dead-letter deliveries", func(t *testing.T) {
+		count, err := svc.BatchReplay(ctx, appID, service.BatchReplayParams{})
+		require.NoError(t, err)
+		assert.Equal(t, 2, count)
+	})
+
+	t.Run("successfully filters by status", func(t *testing.T) {
+		status := models.DeliveryStatusDeadLetter
+		count, err := svc.BatchReplay(ctx, appID, service.BatchReplayParams{
+			Status: &status,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
+	})
+
+	t.Run("rejects invalid replay status", func(t *testing.T) {
+		status := models.DeliveryStatusDelivered
+		_, err := svc.BatchReplay(ctx, appID, service.BatchReplayParams{
+			Status: &status,
+		})
+		assert.ErrorIs(t, err, service.ErrInvalidReplayStatus)
 	})
 }

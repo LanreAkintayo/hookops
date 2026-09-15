@@ -23,6 +23,18 @@ import (
 	"github.com/LanreAkintayo/outpost/internal/service"
 )
 
+// @title           Outpost Webhook Delivery Engine API
+// @version         1.0
+// @description     High-performance, fault-tolerant webhook delivery platform with exponential retries, rate limiting, HMAC signing, and dead-letter queues.
+// @contact.name    Outpost Support
+// @license.name    MIT
+
+// @BasePath        /
+// @securityDefinitions.apikey BearerAuth
+// @in              header
+// @name            Authorization
+// @description     Enter your API key with the Bearer prefix, e.g. 'Bearer op_live_...'
+
 func main() {
 	// Load local .env file (if present)
 	_ = godotenv.Load()
@@ -51,7 +63,6 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to connect to PostgreSQL")
 	}
-	defer dbPool.Close()
 
 	log.Info().Msg("database connection pool initialized and ping verified")
 
@@ -74,12 +85,13 @@ func main() {
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo, endpointRepo, eventTypeRepo)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 
+	deliveryRepo := repository.NewPostgresDeliveryRepository(dbPool)
+
 	eventRepo := repository.NewPostgresEventRepository(dbPool)
-	eventService := service.NewEventService(eventRepo, eventTypeRepo, subscriptionRepo)
+	eventService := service.NewEventService(eventRepo, eventTypeRepo, subscriptionRepo, deliveryRepo)
 	eventHandler := handler.NewEventHandler(eventService)
 
-	// Wire Webhook Delivery Engine (Repository, Deliverer, WorkerPool, Dispatcher)
-	deliveryRepo := repository.NewPostgresDeliveryRepository(dbPool)
+	// Wire Webhook Delivery Engine (Deliverer, WorkerPool, Dispatcher)
 	deliverer := engine.NewHTTPDeliverer(30 * time.Second)
 
 	retryCfg := engine.RetryConfig{
@@ -87,7 +99,14 @@ func main() {
 		MaxDelay:   cfg.Engine.RetryMaxDelay,
 		MaxRetries: cfg.Engine.MaxRetries,
 	}
-	onComplete := engine.NewResultRecorder(deliveryRepo, retryCfg, log)
+
+	onComplete := engine.NewResultRecorder(
+		deliveryRepo,
+		endpointRepo,
+		cfg.Engine.CircuitBreakerMaxFailures,
+		retryCfg,
+		log,
+	)
 
 	rateLimiter := engine.NewEndpointRateLimiter()
 	workerPool := engine.NewWorkerPool(cfg.Engine.WorkerCount, cfg.Engine.QueueSize, deliverer, rateLimiter, onComplete)
@@ -108,13 +127,18 @@ func main() {
 	deliveryService := service.NewDeliveryService(deliveryRepo)
 	deliveryHandler := handler.NewDeliveryHandler(deliveryService)
 
+	statsRepo := repository.NewPostgresStatsRepository(dbPool)
+	statsService := service.NewStatsService(statsRepo, endpointRepo)
+	statsHandler := handler.NewStatsHandler(statsService)
+
 	// Build HTTP Router (Routing & Middlewares)
 	r := router.New(router.RouterParams{
 		Config:          cfg,
 		Logger:          log,
 		AuthMiddleware:  authMiddleware,
+		DBPinger:        dbPool,
 		PublicRoutes:    []router.RouteRegistrar{appHandler},
-		ProtectedRoutes: []router.RouteRegistrar{authHandler, endpointHandler, eventTypeHandler, subscriptionHandler, eventHandler, deliveryHandler},
+		ProtectedRoutes: []router.RouteRegistrar{authHandler, endpointHandler, eventTypeHandler, subscriptionHandler, eventHandler, deliveryHandler, statsHandler},
 	})
 
 	// Initialize HTTP Server (Transport Lifecycle)
@@ -128,28 +152,51 @@ func main() {
 		}
 	}()
 
-	// 4. Graceful Shutdown: Listen for OS termination signals (SIGINT, SIGTERM)
+	// 4. Graceful Shutdown Pipeline
+	// Orchestrate teardown in reverse dependency order:
+	// Ingress (HTTP) -> Polling (Dispatcher) -> Egress (Worker Pool) -> Storage (DB Pool).
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-quit
-	log.Info().Str("signal", sig.String()).Msg("shutdown signal received, closing services gracefully...")
+	log.Info().Str("signal", sig.String()).Msg("shutdown signal received, initiating graceful teardown...")
 
-	// Stop dispatcher so it stops claiming new tasks from the database
+	// Phase 1: Ingress Shutdown
+	// Stop accepting new HTTP requests and let in-flight client requests finish.
+	// Isolated 5-second deadline prevents slow clients from consuming worker drain budget.
+	log.Info().Msg("phase 1: shutting down HTTP server...")
+	httpShutdownCtx, httpCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	if err := srv.Shutdown(httpShutdownCtx); err != nil {
+		log.Error().Err(err).Msg("HTTP server forced to shutdown due to timeout")
+	} else {
+		log.Info().Msg("HTTP server stopped gracefully")
+	}
+	httpCancel()
+
+	// Phase 2: Polling Shutdown
+	// Stop the background ticker and wait for the current DB polling cycle to finish.
+	// No new tasks will be claimed or pushed to the worker pool queue.
+	log.Info().Msg("phase 2: stopping webhook dispatcher...")
 	dispatcher.Stop()
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer shutdownCancel()
-
-	// Shut down HTTP Server
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Error().Err(err).Msg("server forced to shutdown due to timeout")
-	}
-
-	// Drain remaining in-flight tasks in worker pool
-	if err := workerPool.Shutdown(shutdownCtx); err != nil {
+	// Phase 3: Egress Shutdown
+	// Drain tasks in the worker pool queue and wait for in-flight HTTP webhook deliveries
+	// to complete and record their outcomes to Postgres.
+	// Dedicated 15-second budget ensures slow third-party endpoints have time to respond.
+	log.Info().Msg("phase 3: draining worker pool...")
+	workerShutdownCtx, workerCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	if err := workerPool.Shutdown(workerShutdownCtx); err != nil {
 		log.Error().Err(err).Msg("worker pool forced to shutdown due to timeout")
+	} else {
+		log.Info().Msg("worker pool drained cleanly")
 	}
+	workerCancel()
 
-	log.Info().Msg("server exited cleanly")
+	// Phase 4: Storage Shutdown
+	// All HTTP handlers, dispatcher queries, and worker database writes are done.
+	// Safe to close the database pool cleanly.
+	log.Info().Msg("phase 4: closing database connection pool...")
+	dbPool.Close()
+
+	log.Info().Msg("outpost shutdown complete: server exited cleanly")
 }

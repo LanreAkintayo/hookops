@@ -23,6 +23,7 @@ type EndpointRepository interface {
 	ListByApplication(ctx context.Context, appID uuid.UUID) ([]*models.Endpoint, error)
 	Update(ctx context.Context, endpoint *models.Endpoint) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	RecordDeliveryResult(ctx context.Context, endpointID uuid.UUID, success bool, maxFailures int) (bool, error)
 }
 
 // PostgresEndpointRepository implements EndpointRepository against PostgreSQL using pgxpool.
@@ -38,8 +39,8 @@ func NewPostgresEndpointRepository(db *pgxpool.Pool) *PostgresEndpointRepository
 // Create inserts a new endpoint record and scans back the generated ID and timestamps.
 func (r *PostgresEndpointRepository) Create(ctx context.Context, endpoint *models.Endpoint) error {
 	query := `
-		INSERT INTO endpoints (application_id, url, secret, description, status, recipient_id, rate_limit)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO endpoints (application_id, url, secret, description, status, recipient_id, rate_limit, consecutive_failures)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -58,6 +59,7 @@ func (r *PostgresEndpointRepository) Create(ctx context.Context, endpoint *model
 		endpoint.Status,
 		endpoint.RecipientID,
 		endpoint.RateLimit,
+		endpoint.ConsecutiveFailures,
 	).Scan(
 		&endpoint.ID,
 		&endpoint.CreatedAt,
@@ -73,7 +75,7 @@ func (r *PostgresEndpointRepository) Create(ctx context.Context, endpoint *model
 // GetByID fetches an endpoint by its UUID primary key.
 func (r *PostgresEndpointRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Endpoint, error) {
 	query := `
-		SELECT id, application_id, url, secret, description, status, recipient_id, rate_limit, created_at, updated_at
+		SELECT id, application_id, url, secret, description, status, recipient_id, rate_limit, consecutive_failures, created_at, updated_at
 		FROM endpoints
 		WHERE id = $1
 	`
@@ -88,6 +90,7 @@ func (r *PostgresEndpointRepository) GetByID(ctx context.Context, id uuid.UUID) 
 		&e.Status,
 		&e.RecipientID,
 		&e.RateLimit,
+		&e.ConsecutiveFailures,
 		&e.CreatedAt,
 		&e.UpdatedAt,
 	)
@@ -104,7 +107,7 @@ func (r *PostgresEndpointRepository) GetByID(ctx context.Context, id uuid.UUID) 
 // ListByApplication fetches all endpoints belonging to an application tenant ordered by created_at DESC.
 func (r *PostgresEndpointRepository) ListByApplication(ctx context.Context, appID uuid.UUID) ([]*models.Endpoint, error) {
 	query := `
-		SELECT id, application_id, url, secret, description, status, recipient_id, rate_limit, created_at, updated_at
+		SELECT id, application_id, url, secret, description, status, recipient_id, rate_limit, consecutive_failures, created_at, updated_at
 		FROM endpoints
 		WHERE application_id = $1
 		ORDER BY created_at DESC
@@ -128,6 +131,7 @@ func (r *PostgresEndpointRepository) ListByApplication(ctx context.Context, appI
 			&e.Status,
 			&e.RecipientID,
 			&e.RateLimit,
+			&e.ConsecutiveFailures,
 			&e.CreatedAt,
 			&e.UpdatedAt,
 		); err != nil {
@@ -152,8 +156,8 @@ func (r *PostgresEndpointRepository) Update(ctx context.Context, endpoint *model
 	endpoint.UpdatedAt = time.Now()
 	query := `
 		UPDATE endpoints
-		SET url = $1, description = $2, status = $3, recipient_id = $4, rate_limit = $5, updated_at = $6
-		WHERE id = $7
+		SET url = $1, description = $2, status = $3, recipient_id = $4, rate_limit = $5, consecutive_failures = $6, updated_at = $7
+		WHERE id = $8
 	`
 
 	tag, err := r.db.Exec(ctx, query,
@@ -162,6 +166,7 @@ func (r *PostgresEndpointRepository) Update(ctx context.Context, endpoint *model
 		endpoint.Status,
 		endpoint.RecipientID,
 		endpoint.RateLimit,
+		endpoint.ConsecutiveFailures,
 		endpoint.UpdatedAt,
 		endpoint.ID,
 	)
@@ -174,6 +179,46 @@ func (r *PostgresEndpointRepository) Update(ctx context.Context, endpoint *model
 	}
 
 	return nil
+}
+
+// RecordDeliveryResult tracks endpoint health by updating failure streaks and auto-disabling broken endpoints.
+// Returns tripped = true if this delivery caused the endpoint to transition into 'inactive'.
+func (r *PostgresEndpointRepository) RecordDeliveryResult(ctx context.Context, endpointID uuid.UUID, success bool, maxFailures int) (bool, error) {
+	if success {
+		// Reset failure counter on any successful delivery attempt
+		query := `
+			UPDATE endpoints
+			SET consecutive_failures = 0, updated_at = NOW()
+			WHERE id = $1 AND consecutive_failures > 0;
+		`
+		if _, err := r.db.Exec(ctx, query, endpointID); err != nil {
+			return false, fmt.Errorf("failed to reset endpoint failure count: %w", err)
+		}
+		return false, nil
+	}
+
+	// Increment consecutive failures. If threshold reached, automatically trip breaker to 'inactive'.
+	query := `
+		UPDATE endpoints
+		SET consecutive_failures = consecutive_failures + 1,
+		    status = CASE WHEN consecutive_failures + 1 >= $2 THEN 'inactive' ELSE status END,
+		    updated_at = NOW()
+		WHERE id = $1 AND status = 'active'
+		RETURNING status, consecutive_failures;
+	`
+	var currentStatus models.EndpointStatus
+	var failureCount int
+	err := r.db.QueryRow(ctx, query, endpointID, maxFailures).Scan(&currentStatus, &failureCount)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Either endpoint does not exist or was already auto-disabled
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to increment endpoint consecutive failures: %w", err)
+	}
+
+	tripped := currentStatus == models.EndpointStatusInactive && failureCount >= maxFailures
+	return tripped, nil
 }
 
 // Delete removes an endpoint by its primary key.

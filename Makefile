@@ -1,4 +1,4 @@
-.PHONY: db-up db-down migrate-up migrate-down build run test lint
+.PHONY: db-up db-down migrate-up migrate-down build run test lint swagger test-integration
 
 db-up:
 	docker compose up -d
@@ -18,8 +18,10 @@ migrate-up:
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/005_create_events_table.up.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/006_create_delivery_attempts_table.up.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/007_add_rate_limit_to_endpoints.up.sql
+	docker exec -i outpost-db psql -U postgres -d outpost < migrations/008_add_health_tracking_to_endpoints.up.sql
 
 migrate-down:
+	docker exec -i outpost-db psql -U postgres -d outpost < migrations/008_add_health_tracking_to_endpoints.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/007_add_rate_limit_to_endpoints.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/006_create_delivery_attempts_table.down.sql
 	docker exec -i outpost-db psql -U postgres -d outpost < migrations/005_create_events_table.down.sql
@@ -39,3 +41,10 @@ test:
 
 lint:
 	golangci-lint run ./...
+
+swagger:
+	swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal
+
+test-integration:
+	go test -tags=integration -v -count=1 ./tests/integration/...
+

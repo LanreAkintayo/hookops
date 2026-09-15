@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=none
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unconvert
+
+issues:
+  exclude-dirs:
+    - docs
+    - bin

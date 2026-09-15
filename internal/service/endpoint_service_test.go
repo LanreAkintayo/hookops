@@ -69,6 +69,23 @@ func (m *mockEndpointRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (m *mockEndpointRepo) RecordDeliveryResult(ctx context.Context, endpointID uuid.UUID, success bool, maxFailures int) (bool, error) {
+	e, ok := m.endpoints[endpointID]
+	if !ok {
+		return false, nil
+	}
+	if success {
+		e.ConsecutiveFailures = 0
+		return false, nil
+	}
+	e.ConsecutiveFailures++
+	if e.ConsecutiveFailures >= maxFailures {
+		e.Status = models.EndpointStatusInactive
+		return true, nil
+	}
+	return false, nil
+}
+
 func TestEndpointService(t *testing.T) {
 	ctx := context.Background()
 	appID := uuid.New()
@@ -244,5 +261,35 @@ func TestEndpointService(t *testing.T) {
 			RateLimit: &zeroRate,
 		})
 		assert.ErrorIs(t, err, service.ErrInvalidRateLimit)
+	})
+
+	t.Run("Reactivating an inactive endpoint resets consecutive failures to zero", func(t *testing.T) {
+		repo := newMockEndpointRepo()
+		svc := service.NewEndpointService(repo)
+
+		ep, err := svc.CreateEndpoint(ctx, appID, service.CreateEndpointParams{
+			URL: "https://example.com/webhook-failures",
+		})
+		assert.NoError(t, err)
+
+		// Simulate circuit breaker tripping: endpoint has failures and is inactive
+		rawEp := repo.endpoints[ep.ID]
+		rawEp.ConsecutiveFailures = 15
+		rawEp.Status = models.EndpointStatusInactive
+
+		// Operator reactivates endpoint via update API
+		activeStatus := models.EndpointStatusActive
+		updated, err := svc.UpdateEndpoint(ctx, appID, ep.ID, service.UpdateEndpointParams{
+			Status: &activeStatus,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, models.EndpointStatusActive, updated.Status)
+		assert.Equal(t, 0, updated.ConsecutiveFailures)
+
+		// Verify persisted state in repository
+		saved, err := repo.GetByID(ctx, ep.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, models.EndpointStatusActive, saved.Status)
+		assert.Equal(t, 0, saved.ConsecutiveFailures)
 	})
 }

@@ -28,16 +28,18 @@ type SendEventParams struct {
 	IdempotencyKey *string
 }
 
-// EventService defines the business logic operations for event ingestion and retrieval.
+// EventService defines the business logic operations for event ingestion, retrieval, and replay.
 type EventService interface {
 	SendEvent(ctx context.Context, appID uuid.UUID, params SendEventParams) (*models.IngestResult, error)
 	GetEvent(ctx context.Context, appID, id uuid.UUID) (*models.Event, error)
+	ReplayEvent(ctx context.Context, appID, eventID uuid.UUID, failedOnly bool) ([]*models.DeliveryAttempt, error)
 }
 
 type eventService struct {
 	eventRepo        repository.EventRepository
 	eventTypeRepo    repository.EventTypeRepository
 	subscriptionRepo repository.SubscriptionRepository
+	deliveryRepo     repository.DeliveryRepository
 }
 
 // NewEventService constructs a new EventService with its required repositories injected.
@@ -45,11 +47,13 @@ func NewEventService(
 	eventRepo repository.EventRepository,
 	eventTypeRepo repository.EventTypeRepository,
 	subscriptionRepo repository.SubscriptionRepository,
+	deliveryRepo repository.DeliveryRepository,
 ) EventService {
 	return &eventService{
 		eventRepo:        eventRepo,
 		eventTypeRepo:    eventTypeRepo,
 		subscriptionRepo: subscriptionRepo,
+		deliveryRepo:     deliveryRepo,
 	}
 }
 
@@ -148,4 +152,49 @@ func (s *eventService) GetEvent(ctx context.Context, appID, id uuid.UUID) (*mode
 	}
 
 	return event, nil
+}
+
+// ReplayEvent re-dispatches an event by queuing fresh delivery attempts.
+// If failedOnly is true, only endpoints whose latest attempt failed or dead-lettered are replayed.
+// If failedOnly is false, fresh attempts are created for all active subscribed endpoints.
+func (s *eventService) ReplayEvent(ctx context.Context, appID, eventID uuid.UUID, failedOnly bool) ([]*models.DeliveryAttempt, error) {
+	if eventID == uuid.Nil {
+		return nil, ErrEventNotFound
+	}
+
+	event, err := s.GetEvent(ctx, appID, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	if failedOnly {
+		return s.deliveryRepo.ReplayFailedAttemptsByEvent(ctx, appID, eventID)
+	}
+
+	// Replay to all subscribed endpoints: lookup event type first
+	eventType, err := s.eventTypeRepo.GetByID(ctx, event.EventTypeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get event type for replay: %w", err)
+	}
+
+	subscribedEndpoints, err := s.subscriptionRepo.GetSubscribedEndpoints(ctx, appID, eventType.Name, event.RecipientID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query subscribed endpoints for replay: %w", err)
+	}
+
+	attempts := make([]*models.DeliveryAttempt, 0, len(subscribedEndpoints))
+	for _, ep := range subscribedEndpoints {
+		attempts = append(attempts, &models.DeliveryAttempt{
+			EventID:       event.ID,
+			EndpointID:    ep.ID,
+			Status:        models.DeliveryStatusPending,
+			AttemptNumber: 1,
+		})
+	}
+
+	if err := s.deliveryRepo.CreateAttempts(ctx, attempts); err != nil {
+		return nil, fmt.Errorf("failed to persist replayed delivery attempts: %w", err)
+	}
+
+	return attempts, nil
 }

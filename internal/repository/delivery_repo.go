@@ -51,6 +51,15 @@ type DeliveryRepository interface {
 
 	// ManualRetry resets a failed or dead-lettered delivery back to 'pending' with attempt #1.
 	ManualRetry(ctx context.Context, appID, deliveryID uuid.UUID) (*models.DeliveryAttempt, error)
+
+	// CreateAttempts inserts multiple delivery attempts in a single transaction.
+	CreateAttempts(ctx context.Context, attempts []*models.DeliveryAttempt) error
+
+	// ReplayFailedAttemptsByEvent creates fresh delivery attempts for endpoints whose latest attempt failed.
+	ReplayFailedAttemptsByEvent(ctx context.Context, appID, eventID uuid.UUID) ([]*models.DeliveryAttempt, error)
+
+	// BatchReplay creates fresh delivery attempts for matching failed/dead-lettered deliveries.
+	BatchReplay(ctx context.Context, appID uuid.UUID, filter DeliveryFilter) (int, error)
 }
 
 type PostgresDeliveryRepository struct {
@@ -412,4 +421,132 @@ func (r *PostgresDeliveryRepository) ManualRetry(ctx context.Context, appID, del
 	}
 
 	return nil, fmt.Errorf("failed to manually retry delivery attempt: %w", err)
+}
+
+// CreateAttempts inserts multiple delivery attempts in a single transaction.
+func (r *PostgresDeliveryRepository) CreateAttempts(ctx context.Context, attempts []*models.DeliveryAttempt) error {
+	if len(attempts) == 0 {
+		return nil
+	}
+
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	query := `
+		INSERT INTO delivery_attempts (event_id, endpoint_id, status, attempt_number)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at, updated_at
+	`
+
+	for _, att := range attempts {
+		if att.Status == "" {
+			att.Status = models.DeliveryStatusPending
+		}
+		if att.AttemptNumber <= 0 {
+			att.AttemptNumber = 1
+		}
+		err = tx.QueryRow(ctx, query,
+			att.EventID,
+			att.EndpointID,
+			att.Status,
+			att.AttemptNumber,
+		).Scan(&att.ID, &att.CreatedAt, &att.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("failed to insert delivery attempt for endpoint %s: %w", att.EndpointID, err)
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
+// ReplayFailedAttemptsByEvent creates fresh delivery attempts for endpoints whose latest attempt failed.
+func (r *PostgresDeliveryRepository) ReplayFailedAttemptsByEvent(ctx context.Context, appID, eventID uuid.UUID) ([]*models.DeliveryAttempt, error) {
+	query := fmt.Sprintf(`
+		WITH latest_attempts AS (
+			SELECT DISTINCT ON (da.endpoint_id)
+				da.endpoint_id,
+				da.status
+			FROM delivery_attempts da
+			JOIN events e ON da.event_id = e.id
+			WHERE e.application_id = $1
+			  AND da.event_id = $2
+			ORDER BY da.endpoint_id, da.created_at DESC
+		),
+		to_replay AS (
+			SELECT endpoint_id
+			FROM latest_attempts
+			WHERE status IN ('failed', 'dead_letter')
+		)
+		INSERT INTO delivery_attempts (event_id, endpoint_id, status, attempt_number)
+		SELECT $2, endpoint_id, 'pending', 1
+		FROM to_replay
+		RETURNING %s;
+	`, deliveryAttemptColumns)
+
+	rows, err := r.db.Query(ctx, query, appID, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to replay failed attempts for event: %w", err)
+	}
+	defer rows.Close()
+
+	return scanDeliveryAttempts(rows)
+}
+
+// BatchReplay creates fresh delivery attempts for matching failed/dead-lettered deliveries.
+func (r *PostgresDeliveryRepository) BatchReplay(ctx context.Context, appID uuid.UUID, filter DeliveryFilter) (int, error) {
+	var statusArg any
+	if filter.Status != nil {
+		statusArg = string(*filter.Status)
+	}
+
+	query := `
+		WITH latest_attempts AS (
+			SELECT DISTINCT ON (da.event_id, da.endpoint_id)
+				da.event_id,
+				da.endpoint_id,
+				da.status
+			FROM delivery_attempts da
+			JOIN events e ON da.event_id = e.id
+			WHERE e.application_id = $1
+			  AND ($2::text IS NULL OR da.status = $2)
+			  AND ($3::uuid IS NULL OR da.endpoint_id = $3)
+			  AND ($4::timestamptz IS NULL OR da.created_at >= $4)
+			  AND ($5::timestamptz IS NULL OR da.created_at <= $5)
+			ORDER BY da.event_id, da.endpoint_id, da.created_at DESC
+		),
+		to_replay AS (
+			SELECT event_id, endpoint_id
+			FROM latest_attempts
+			WHERE status IN ('failed', 'dead_letter')
+		)
+		INSERT INTO delivery_attempts (event_id, endpoint_id, status, attempt_number)
+		SELECT event_id, endpoint_id, 'pending', 1
+		FROM to_replay
+		RETURNING id;
+	`
+
+	rows, err := r.db.Query(ctx, query,
+		appID,
+		statusArg,
+		filter.EndpointID,
+		filter.From,
+		filter.To,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("failed to execute batch replay: %w", err)
+	}
+	defer rows.Close()
+
+	count := 0
+	for rows.Next() {
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("failed scanning batch replay results: %w", err)
+	}
+
+	return count, nil
 }

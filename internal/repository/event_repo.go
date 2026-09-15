@@ -40,7 +40,7 @@ func (r *PostgresEventRepository) CreateWithAttempts(ctx context.Context, event 
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	eventQuery := `
 		INSERT INTO events (application_id, event_type_id, payload, idempotency_key, recipient_id)

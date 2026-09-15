@@ -28,31 +28,33 @@ type UpdateEndpointRequest struct {
 
 // EndpointResponse represents the public API response for an endpoint.
 type EndpointResponse struct {
-	ID            uuid.UUID             `json:"id"`
-	ApplicationID uuid.UUID             `json:"application_id"`
-	URL           string                `json:"url"`
-	Secret        string                `json:"secret"`
-	Description   string                `json:"description"`
-	Status        models.EndpointStatus `json:"status"`
-	RecipientID   string                `json:"recipient_id"`
-	RateLimit     int                   `json:"rate_limit"`
-	CreatedAt     time.Time             `json:"created_at"`
-	UpdatedAt     time.Time             `json:"updated_at"`
+	ID                  uuid.UUID             `json:"id"`
+	ApplicationID       uuid.UUID             `json:"application_id"`
+	URL                 string                `json:"url"`
+	Secret              string                `json:"secret"`
+	Description         string                `json:"description"`
+	Status              models.EndpointStatus `json:"status"`
+	RecipientID         string                `json:"recipient_id"`
+	RateLimit           int                   `json:"rate_limit"`
+	ConsecutiveFailures int                   `json:"consecutive_failures"`
+	CreatedAt           time.Time             `json:"created_at"`
+	UpdatedAt           time.Time             `json:"updated_at"`
 }
 
 // ToEndpointResponse maps an internal Endpoint domain model to an EndpointResponse DTO.
 func ToEndpointResponse(e *models.Endpoint) EndpointResponse {
 	return EndpointResponse{
-		ID:            e.ID,
-		ApplicationID: e.ApplicationID,
-		URL:           e.URL,
-		Secret:        e.Secret,
-		Description:   e.Description,
-		Status:        e.Status,
-		RecipientID:   e.RecipientID,
-		RateLimit:     e.RateLimit,
-		CreatedAt:     e.CreatedAt,
-		UpdatedAt:     e.UpdatedAt,
+		ID:                  e.ID,
+		ApplicationID:       e.ApplicationID,
+		URL:                 e.URL,
+		Secret:              e.Secret,
+		Description:         e.Description,
+		Status:              e.Status,
+		RecipientID:         e.RecipientID,
+		RateLimit:           e.RateLimit,
+		ConsecutiveFailures: e.ConsecutiveFailures,
+		CreatedAt:           e.CreatedAt,
+		UpdatedAt:           e.UpdatedAt,
 	}
 }
 

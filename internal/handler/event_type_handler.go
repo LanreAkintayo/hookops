@@ -35,6 +35,19 @@ func (h *EventTypeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 // Create handles POST /api/v1/event-types
+// @Summary      Create event type
+// @Description  Define a new event type name in dot-notation (e.g. payment.completed)
+// @Tags         Event Types
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      dto.CreateEventTypeRequest  true  "Event type details"
+// @Success      201      {object}  dto.EventTypeResponse
+// @Failure      400      {object}  response.ErrorResponse
+// @Failure      401      {object}  response.ErrorResponse
+// @Failure      409      {object}  response.ErrorResponse
+// @Failure      500      {object}  response.ErrorResponse
+// @Router       /api/v1/event-types [post]
 func (h *EventTypeHandler) Create(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -73,6 +86,15 @@ func (h *EventTypeHandler) Create(c *gin.Context) {
 }
 
 // List handles GET /api/v1/event-types
+// @Summary      List event types
+// @Description  Fetch all event types registered in the authenticated application
+// @Tags         Event Types
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.EventTypeResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/event-types [get]
 func (h *EventTypeHandler) List(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -90,6 +112,18 @@ func (h *EventTypeHandler) List(c *gin.Context) {
 }
 
 // GetByID handles GET /api/v1/event-types/:id
+// @Summary      Get event type by ID
+// @Description  Retrieve single event type details by UUID
+// @Tags         Event Types
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      string  true  "Event Type UUID" format(uuid)
+// @Success      200  {object}  dto.EventTypeResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/event-types/{id} [get]
 func (h *EventTypeHandler) GetByID(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -118,6 +152,17 @@ func (h *EventTypeHandler) GetByID(c *gin.Context) {
 }
 
 // Delete handles DELETE /api/v1/event-types/:id
+// @Summary      Delete event type
+// @Description  Delete an event type by UUID
+// @Tags         Event Types
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Event Type UUID" format(uuid)
+// @Success      204  "No Content"
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/event-types/{id} [delete]
 func (h *EventTypeHandler) Delete(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {

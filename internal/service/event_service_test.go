@@ -76,7 +76,12 @@ type mockEventTypeLookupRepo struct {
 
 func (m *mockEventTypeLookupRepo) Create(ctx context.Context, et *models.EventType) error { return nil }
 func (m *mockEventTypeLookupRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.EventType, error) {
-	return nil, nil
+	for _, et := range m.eventTypes {
+		if et.ID == id {
+			return et, nil
+		}
+	}
+	return nil, repository.ErrNotFound
 }
 func (m *mockEventTypeLookupRepo) GetByName(ctx context.Context, appID uuid.UUID, name string) (*models.EventType, error) {
 	et, ok := m.eventTypes[name]
@@ -130,7 +135,8 @@ func TestEventService_SendEvent(t *testing.T) {
 			},
 		}
 
-		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo)
+		deliveryRepo := newMockDeliveryRepo()
+		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo, deliveryRepo)
 
 		res, err := svc.SendEvent(ctx, appID, service.SendEventParams{
 			EventType:   "payment.succeeded",
@@ -150,8 +156,9 @@ func TestEventService_SendEvent(t *testing.T) {
 		subRepo := &mockSubLookupRepo{
 			endpoints: []*models.Endpoint{{ID: uuid.New(), URL: "https://webhook.site"}},
 		}
+		deliveryRepo := newMockDeliveryRepo()
 
-		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo)
+		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo, deliveryRepo)
 		key := "tx_unique_999"
 
 		// First call
@@ -175,7 +182,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	})
 
 	t.Run("rejects empty event type", func(t *testing.T) {
-		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{})
+		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{}, newMockDeliveryRepo())
 
 		_, err := svc.SendEvent(ctx, appID, service.SendEventParams{
 			EventType: "   ",
@@ -186,7 +193,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	})
 
 	t.Run("rejects invalid JSON payload", func(t *testing.T) {
-		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{})
+		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{}, newMockDeliveryRepo())
 
 		_, err := svc.SendEvent(ctx, appID, service.SendEventParams{
 			EventType: "payment.succeeded",
@@ -197,7 +204,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	})
 
 	t.Run("rejects unknown event type", func(t *testing.T) {
-		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{})
+		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{}, newMockDeliveryRepo())
 
 		_, err := svc.SendEvent(ctx, appID, service.SendEventParams{
 			EventType: "unknown.event",
@@ -208,7 +215,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	})
 
 	t.Run("succeeds when zero endpoints are subscribed", func(t *testing.T) {
-		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{endpoints: []*models.Endpoint{}})
+		svc := service.NewEventService(newMockEventRepo(), eventTypeRepo, &mockSubLookupRepo{endpoints: []*models.Endpoint{}}, newMockDeliveryRepo())
 
 		res, err := svc.SendEvent(ctx, appID, service.SendEventParams{
 			EventType: "payment.succeeded",
@@ -217,5 +224,93 @@ func TestEventService_SendEvent(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Equal(t, 0, res.QueuedDeliveries)
+	})
+}
+
+func TestEventService_ReplayEvent(t *testing.T) {
+	ctx := context.Background()
+	appID := uuid.New()
+	eventTypeID := uuid.New()
+	ep1 := uuid.New()
+	ep2 := uuid.New()
+
+	eventTypeRepo := &mockEventTypeLookupRepo{
+		eventTypes: map[string]*models.EventType{
+			"order.completed": {
+				ID:            eventTypeID,
+				ApplicationID: appID,
+				Name:          "order.completed",
+			},
+		},
+	}
+
+	subRepo := &mockSubLookupRepo{
+		endpoints: []*models.Endpoint{
+			{ID: ep1, URL: "https://ep1.example.com"},
+			{ID: ep2, URL: "https://ep2.example.com"},
+		},
+	}
+
+	t.Run("successfully replays only failed attempts when failedOnly is true", func(t *testing.T) {
+		eventRepo := newMockEventRepo()
+		deliveryRepo := newMockDeliveryRepo()
+		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo, deliveryRepo)
+
+		// Seed event
+		event := &models.Event{
+			ID:            uuid.New(),
+			ApplicationID: appID,
+			EventTypeID:   eventTypeID,
+			Payload:       json.RawMessage(`{"order_id":123}`),
+		}
+		eventRepo.events[event.ID] = event
+
+		// Seed 1 delivered and 1 failed attempt
+		deliveryRepo.deliveries[uuid.New()] = &models.DeliveryAttempt{
+			ID:         uuid.New(),
+			EventID:    event.ID,
+			EndpointID: ep1,
+			Status:     models.DeliveryStatusDelivered,
+		}
+		deliveryRepo.deliveries[uuid.New()] = &models.DeliveryAttempt{
+			ID:         uuid.New(),
+			EventID:    event.ID,
+			EndpointID: ep2,
+			Status:     models.DeliveryStatusFailed,
+		}
+
+		replayed, err := svc.ReplayEvent(ctx, appID, event.ID, true)
+		require.NoError(t, err)
+		assert.Len(t, replayed, 1)
+		assert.Equal(t, ep2, replayed[0].EndpointID)
+		assert.Equal(t, models.DeliveryStatusPending, replayed[0].Status)
+		assert.Equal(t, 1, replayed[0].AttemptNumber)
+	})
+
+	t.Run("replays to all subscribed endpoints when failedOnly is false", func(t *testing.T) {
+		eventRepo := newMockEventRepo()
+		deliveryRepo := newMockDeliveryRepo()
+		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo, deliveryRepo)
+
+		event := &models.Event{
+			ID:            uuid.New(),
+			ApplicationID: appID,
+			EventTypeID:   eventTypeID,
+			Payload:       json.RawMessage(`{"order_id":456}`),
+		}
+		eventRepo.events[event.ID] = event
+
+		replayed, err := svc.ReplayEvent(ctx, appID, event.ID, false)
+		require.NoError(t, err)
+		assert.Len(t, replayed, 2)
+	})
+
+	t.Run("returns error when event does not exist", func(t *testing.T) {
+		eventRepo := newMockEventRepo()
+		deliveryRepo := newMockDeliveryRepo()
+		svc := service.NewEventService(eventRepo, eventTypeRepo, subRepo, deliveryRepo)
+
+		_, err := svc.ReplayEvent(ctx, appID, uuid.New(), true)
+		assert.ErrorIs(t, err, service.ErrEventNotFound)
 	})
 }

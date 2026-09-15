@@ -138,6 +138,10 @@ func (s *endpointService) UpdateEndpoint(ctx context.Context, appID, id uuid.UUI
 			return nil, ErrInvalidStatus
 		}
 		endpoint.Status = *params.Status
+		// When an operator reactivates a disabled endpoint, give it a clean slate by resetting the failure counter
+		if *params.Status == models.EndpointStatusActive {
+			endpoint.ConsecutiveFailures = 0
+		}
 	}
 
 	if params.RecipientID != nil {

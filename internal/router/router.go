@@ -1,14 +1,24 @@
 package router
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
+	_ "github.com/LanreAkintayo/outpost/docs"
 	"github.com/LanreAkintayo/outpost/internal/config"
 	"github.com/LanreAkintayo/outpost/internal/middleware"
 )
+
+// DatabasePinger defines an interface for verifying database connectivity.
+type DatabasePinger interface {
+	Ping(ctx context.Context) error
+}
 
 // RouteRegistrar defines a component capable of mounting its endpoints onto a Gin router group.
 type RouteRegistrar interface {
@@ -20,6 +30,7 @@ type RouterParams struct {
 	Config          *config.Config
 	Logger          zerolog.Logger
 	AuthMiddleware  gin.HandlerFunc
+	DBPinger        DatabasePinger
 	PublicRoutes    []RouteRegistrar
 	ProtectedRoutes []RouteRegistrar
 }
@@ -37,11 +48,34 @@ func New(params RouterParams) *gin.Engine {
 
 	// Health Check (Public, unauthenticated)
 	r.GET("/health", func(c *gin.Context) {
+		dbStatus := "disabled"
+		if params.DBPinger != nil {
+			pingCtx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+			defer cancel()
+			if err := params.DBPinger.Ping(pingCtx); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{
+					"status":   "unhealthy",
+					"service":  "outpost",
+					"database": "unreachable",
+					"error":    err.Error(),
+				})
+				return
+			}
+			dbStatus = "connected"
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "healthy",
-			"service": "outpost",
+			"status":   "healthy",
+			"service":  "outpost",
+			"database": dbStatus,
 		})
 	})
+
+	// Swagger API Documentation (Public, unauthenticated)
+	r.GET("/docs", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/docs/index.html")
+	})
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API v1
 	v1 := r.Group("/api/v1")

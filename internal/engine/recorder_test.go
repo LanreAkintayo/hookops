@@ -24,15 +24,33 @@ func (m *mockOutcomeRecorder) RecordOutcome(ctx context.Context, outcome engine.
 	return nil
 }
 
+type mockHealthRecorder struct {
+	lastEndpointID uuid.UUID
+	lastSuccess    bool
+	lastMax        int
+	tripped        bool
+	called         bool
+}
+
+func (m *mockHealthRecorder) RecordDeliveryResult(ctx context.Context, endpointID uuid.UUID, success bool, maxFailures int) (bool, error) {
+	m.lastEndpointID = endpointID
+	m.lastSuccess = success
+	m.lastMax = maxFailures
+	m.called = true
+	return m.tripped, nil
+}
+
 func TestResultRecorder_Success(t *testing.T) {
 	mock := &mockOutcomeRecorder{}
+	mockHealth := &mockHealthRecorder{}
 	logger := zerolog.New(io.Discard)
 	retryCfg := engine.RetryConfig{BaseDelay: time.Second, MaxDelay: time.Minute, MaxRetries: 5}
 
-	handler := engine.NewResultRecorder(mock, retryCfg, logger)
+	handler := engine.NewResultRecorder(mock, mockHealth, 5, retryCfg, logger)
 
 	attemptID := uuid.New()
-	task := engine.DeliveryTask{AttemptID: attemptID, AttemptNumber: 1, EndpointURL: "http://example.com"}
+	endpointID := uuid.New()
+	task := engine.DeliveryTask{AttemptID: attemptID, EndpointID: endpointID, AttemptNumber: 1, EndpointURL: "http://example.com"}
 	status200 := 200
 	result := &engine.DeliveryResult{Success: true, HTTPStatus: &status200, ExecutionDurationMS: 50}
 
@@ -50,17 +68,28 @@ func TestResultRecorder_Success(t *testing.T) {
 	if mock.lastOutcome.AttemptNumber != 1 {
 		t.Fatalf("expected attempt number 1, got %d", mock.lastOutcome.AttemptNumber)
 	}
+	if !mockHealth.called {
+		t.Fatal("expected health recorder to be called on delivery success")
+	}
+	if !mockHealth.lastSuccess {
+		t.Fatal("expected health recorder to receive success=true")
+	}
+	if mockHealth.lastEndpointID != endpointID {
+		t.Fatalf("expected endpointID %v, got %v", endpointID, mockHealth.lastEndpointID)
+	}
 }
 
 func TestResultRecorder_PermanentFailure4xx(t *testing.T) {
 	mock := &mockOutcomeRecorder{}
+	mockHealth := &mockHealthRecorder{}
 	logger := zerolog.New(io.Discard)
 	retryCfg := engine.RetryConfig{BaseDelay: time.Second, MaxDelay: time.Minute, MaxRetries: 5}
 
-	handler := engine.NewResultRecorder(mock, retryCfg, logger)
+	handler := engine.NewResultRecorder(mock, mockHealth, 5, retryCfg, logger)
 
 	attemptID := uuid.New()
-	task := engine.DeliveryTask{AttemptID: attemptID, AttemptNumber: 1, EndpointURL: "http://example.com"}
+	endpointID := uuid.New()
+	task := engine.DeliveryTask{AttemptID: attemptID, EndpointID: endpointID, AttemptNumber: 1, EndpointURL: "http://example.com"}
 	status404 := 404
 	result := &engine.DeliveryResult{Success: false, HTTPStatus: &status404, ExecutionDurationMS: 40}
 
@@ -72,17 +101,25 @@ func TestResultRecorder_PermanentFailure4xx(t *testing.T) {
 	if mock.lastOutcome.NextRetryAt != nil {
 		t.Fatal("expected NextRetryAt to be nil for permanent failure")
 	}
+	if !mockHealth.called {
+		t.Fatal("expected health recorder to be called on failure")
+	}
+	if mockHealth.lastSuccess {
+		t.Fatal("expected health recorder to receive success=false")
+	}
 }
 
 func TestResultRecorder_RetryableFailureSchedulesRetry(t *testing.T) {
 	mock := &mockOutcomeRecorder{}
+	mockHealth := &mockHealthRecorder{}
 	logger := zerolog.New(io.Discard)
 	retryCfg := engine.RetryConfig{BaseDelay: time.Second, MaxDelay: time.Minute, MaxRetries: 5}
 
-	handler := engine.NewResultRecorder(mock, retryCfg, logger)
+	handler := engine.NewResultRecorder(mock, mockHealth, 5, retryCfg, logger)
 
 	attemptID := uuid.New()
-	task := engine.DeliveryTask{AttemptID: attemptID, AttemptNumber: 1, EndpointURL: "http://example.com"}
+	endpointID := uuid.New()
+	task := engine.DeliveryTask{AttemptID: attemptID, EndpointID: endpointID, AttemptNumber: 1, EndpointURL: "http://example.com"}
 	status500 := 500
 	result := &engine.DeliveryResult{Success: false, HTTPStatus: &status500, ExecutionDurationMS: 80}
 
@@ -100,17 +137,22 @@ func TestResultRecorder_RetryableFailureSchedulesRetry(t *testing.T) {
 	if mock.lastOutcome.NextRetryAt.Before(time.Now()) {
 		t.Fatal("expected NextRetryAt to be in the future")
 	}
+	if !mockHealth.called {
+		t.Fatal("expected health recorder to be called on retryable failure")
+	}
 }
 
 func TestResultRecorder_DeadLetterOnMaxRetries(t *testing.T) {
 	mock := &mockOutcomeRecorder{}
+	mockHealth := &mockHealthRecorder{}
 	logger := zerolog.New(io.Discard)
 	retryCfg := engine.RetryConfig{BaseDelay: time.Second, MaxDelay: time.Minute, MaxRetries: 3}
 
-	handler := engine.NewResultRecorder(mock, retryCfg, logger)
+	handler := engine.NewResultRecorder(mock, mockHealth, 5, retryCfg, logger)
 
 	attemptID := uuid.New()
-	task := engine.DeliveryTask{AttemptID: attemptID, AttemptNumber: 3, EndpointURL: "http://example.com"}
+	endpointID := uuid.New()
+	task := engine.DeliveryTask{AttemptID: attemptID, EndpointID: endpointID, AttemptNumber: 3, EndpointURL: "http://example.com"}
 	status500 := 500
 	result := &engine.DeliveryResult{Success: false, HTTPStatus: &status500, ExecutionDurationMS: 80}
 
@@ -121,5 +163,30 @@ func TestResultRecorder_DeadLetterOnMaxRetries(t *testing.T) {
 	}
 	if mock.lastOutcome.NextRetryAt != nil {
 		t.Fatal("expected NextRetryAt to be nil on dead letter")
+	}
+}
+
+func TestResultRecorder_CircuitBreakerTripped(t *testing.T) {
+	mock := &mockOutcomeRecorder{}
+	mockHealth := &mockHealthRecorder{tripped: true}
+	logger := zerolog.New(io.Discard)
+	retryCfg := engine.RetryConfig{BaseDelay: time.Second, MaxDelay: time.Minute, MaxRetries: 5}
+
+	handler := engine.NewResultRecorder(mock, mockHealth, 5, retryCfg, logger)
+
+	attemptID := uuid.New()
+	endpointID := uuid.New()
+	task := engine.DeliveryTask{AttemptID: attemptID, EndpointID: endpointID, AttemptNumber: 1, EndpointURL: "http://example.com"}
+	status500 := 500
+	result := &engine.DeliveryResult{Success: false, HTTPStatus: &status500, ExecutionDurationMS: 80}
+
+	// Calling handler with tripped circuit breaker should log warning and not panic
+	handler(context.Background(), task, result)
+
+	if !mockHealth.called {
+		t.Fatal("expected health recorder to be called")
+	}
+	if mockHealth.lastMax != 5 {
+		t.Fatalf("expected maxFailures 5, got %d", mockHealth.lastMax)
 	}
 }

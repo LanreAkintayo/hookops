@@ -29,9 +29,10 @@ type EngineConfig struct {
 	QueueSize      int
 	PollInterval   time.Duration
 	BatchSize      int
-	MaxRetries     int
-	RetryBaseDelay time.Duration
-	RetryMaxDelay  time.Duration
+	MaxRetries                int
+	RetryBaseDelay            time.Duration
+	RetryMaxDelay             time.Duration
+	CircuitBreakerMaxFailures int
 }
 
 // Config represents the complete typed configuration for Outpost.
@@ -59,13 +60,14 @@ func Load() (*Config, error) {
 			SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 		},
 		Engine: EngineConfig{
-			WorkerCount:    getEnvInt("WORKER_COUNT", 5),
-			QueueSize:      getEnvInt("QUEUE_SIZE", 100),
-			PollInterval:   getEnvDuration("DISPATCHER_POLL_INTERVAL", 2*time.Second),
-			BatchSize:      getEnvInt("DISPATCHER_BATCH_SIZE", 50),
-			MaxRetries:     getEnvInt("MAX_RETRIES", 5),
-			RetryBaseDelay: getEnvDuration("RETRY_BASE_DELAY", 30*time.Second),
-			RetryMaxDelay:  getEnvDuration("RETRY_MAX_DELAY", 4*time.Hour),
+			WorkerCount:               getEnvInt("WORKER_COUNT", 5),
+			QueueSize:                 getEnvInt("QUEUE_SIZE", 100),
+			PollInterval:              getEnvDuration("DISPATCHER_POLL_INTERVAL", 2*time.Second),
+			BatchSize:                 getEnvInt("DISPATCHER_BATCH_SIZE", 50),
+			MaxRetries:                getEnvInt("MAX_RETRIES", 5),
+			RetryBaseDelay:            getEnvDuration("RETRY_BASE_DELAY", 30*time.Second),
+			RetryMaxDelay:             getEnvDuration("RETRY_MAX_DELAY", 4*time.Hour),
+			CircuitBreakerMaxFailures: getEnvInt("CIRCUIT_BREAKER_MAX_FAILURES", 20),
 		},
 	}
 
@@ -117,6 +119,9 @@ func (c *Config) Validate() error {
 	}
 	if c.Engine.RetryMaxDelay < c.Engine.RetryBaseDelay {
 		return fmt.Errorf("RETRY_MAX_DELAY must be greater than or equal to RETRY_BASE_DELAY")
+	}
+	if c.Engine.CircuitBreakerMaxFailures <= 0 {
+		return fmt.Errorf("CIRCUIT_BREAKER_MAX_FAILURES must be greater than 0")
 	}
 	return nil
 }

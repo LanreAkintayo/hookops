@@ -73,3 +73,17 @@ func ToDeliveryAttemptResponses(attempts []*models.DeliveryAttempt) []DeliveryAt
 	}
 	return res
 }
+
+// BatchReplayRequest defines optional query filters for replaying multiple failed deliveries.
+type BatchReplayRequest struct {
+	Status     *models.DeliveryStatus `json:"status,omitempty"`
+	EndpointID *uuid.UUID             `json:"endpoint_id,omitempty"`
+	From       *time.Time             `json:"from,omitempty"`
+	To         *time.Time             `json:"to,omitempty"`
+}
+
+// BatchReplayResponse represents the result of a batch replay execution.
+type BatchReplayResponse struct {
+	Status           string `json:"status"`
+	QueuedDeliveries int    `json:"queued_deliveries"`
+}

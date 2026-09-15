@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -74,6 +75,25 @@ func (m *mockDeliveryService) ManualRetry(ctx context.Context, appID, deliveryID
 	d.AttemptNumber = 1
 	d.NextRetryAt = nil
 	return d, nil
+}
+
+func (m *mockDeliveryService) BatchReplay(ctx context.Context, appID uuid.UUID, params service.BatchReplayParams) (int, error) {
+	if params.Status != nil && *params.Status != models.DeliveryStatusFailed && *params.Status != models.DeliveryStatusDeadLetter {
+		return 0, service.ErrInvalidReplayStatus
+	}
+	count := 0
+	for _, d := range m.deliveries {
+		if params.Status != nil && d.Status != *params.Status {
+			continue
+		}
+		if params.EndpointID != nil && d.EndpointID != *params.EndpointID {
+			continue
+		}
+		if d.Status == models.DeliveryStatusFailed || d.Status == models.DeliveryStatusDeadLetter {
+			count++
+		}
+	}
+	return count, nil
 }
 
 func setupDeliveryTestRouter(svc service.DeliveryService, authenticated bool, app *models.Application) *gin.Engine {
@@ -295,5 +315,29 @@ func TestDeliveryHandler_ManualRetry(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("200 OK batch replay queued deliveries", func(t *testing.T) {
+		body := `{"status": "dead_letter"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/replay", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		var res map[string]any
+		err := json.Unmarshal(w.Body.Bytes(), &res)
+		require.NoError(t, err)
+		assert.Equal(t, "success", res["status"])
+	})
+
+	t.Run("400 Bad Request batch replay on invalid status", func(t *testing.T) {
+		body := `{"status": "delivered"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/replay", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }

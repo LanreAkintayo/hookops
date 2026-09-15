@@ -64,3 +64,41 @@ func ToIngestEventResponse(r *models.IngestResult) IngestEventResponse {
 		CreatedAt:        r.Event.CreatedAt,
 	}
 }
+
+// ReplayEventRequest defines optional parameters when replaying a single event.
+type ReplayEventRequest struct {
+	FailedOnly *bool `json:"failed_only,omitempty"`
+}
+
+// DeliveryAttemptSummary provides a brief summary of a queued delivery attempt.
+type DeliveryAttemptSummary struct {
+	ID            uuid.UUID             `json:"id"`
+	EndpointID    uuid.UUID             `json:"endpoint_id"`
+	Status        models.DeliveryStatus `json:"status"`
+	AttemptNumber int                   `json:"attempt_number"`
+}
+
+// ReplayEventResponse represents the response returned after replaying an event.
+type ReplayEventResponse struct {
+	EventID          uuid.UUID                `json:"event_id"`
+	QueuedDeliveries int                      `json:"queued_deliveries"`
+	Attempts         []DeliveryAttemptSummary `json:"attempts"`
+}
+
+// ToReplayEventResponse maps an event UUID and slice of created attempts to a ReplayEventResponse DTO.
+func ToReplayEventResponse(eventID uuid.UUID, attempts []*models.DeliveryAttempt) ReplayEventResponse {
+	summaries := make([]DeliveryAttemptSummary, len(attempts))
+	for i, att := range attempts {
+		summaries[i] = DeliveryAttemptSummary{
+			ID:            att.ID,
+			EndpointID:    att.EndpointID,
+			Status:        att.Status,
+			AttemptNumber: att.AttemptNumber,
+		}
+	}
+	return ReplayEventResponse{
+		EventID:          eventID,
+		QueuedDeliveries: len(attempts),
+		Attempts:         summaries,
+	}
+}

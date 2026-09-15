@@ -36,6 +36,18 @@ func (h *EndpointHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 // Create handles POST /api/v1/endpoints
+// @Summary      Create endpoint
+// @Description  Register a new webhook destination URL and generate an HMAC signing secret (whsec_...)
+// @Tags         Endpoints
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      dto.CreateEndpointRequest  true  "Endpoint configuration"
+// @Success      201      {object}  dto.EndpointResponse
+// @Failure      400      {object}  response.ErrorResponse
+// @Failure      401      {object}  response.ErrorResponse
+// @Failure      500      {object}  response.ErrorResponse
+// @Router       /api/v1/endpoints [post]
 func (h *EndpointHandler) Create(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -72,6 +84,15 @@ func (h *EndpointHandler) Create(c *gin.Context) {
 }
 
 // List handles GET /api/v1/endpoints
+// @Summary      List endpoints
+// @Description  List all registered webhook endpoints for the authenticated application
+// @Tags         Endpoints
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {array}   dto.EndpointResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/endpoints [get]
 func (h *EndpointHandler) List(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -89,6 +110,18 @@ func (h *EndpointHandler) List(c *gin.Context) {
 }
 
 // GetByID handles GET /api/v1/endpoints/:id
+// @Summary      Get endpoint by ID
+// @Description  Fetch details of a specific webhook endpoint
+// @Tags         Endpoints
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id   path      string  true  "Endpoint UUID" format(uuid)
+// @Success      200  {object}  dto.EndpointResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/endpoints/{id} [get]
 func (h *EndpointHandler) GetByID(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -117,6 +150,20 @@ func (h *EndpointHandler) GetByID(c *gin.Context) {
 }
 
 // Update handles PUT /api/v1/endpoints/:id
+// @Summary      Update endpoint
+// @Description  Update URL, description, status (active/inactive), or rate limit of an endpoint
+// @Tags         Endpoints
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string                     true  "Endpoint UUID" format(uuid)
+// @Param        request  body      dto.UpdateEndpointRequest  true  "Endpoint update payload"
+// @Success      200      {object}  dto.EndpointResponse
+// @Failure      400      {object}  response.ErrorResponse
+// @Failure      401      {object}  response.ErrorResponse
+// @Failure      404      {object}  response.ErrorResponse
+// @Failure      500      {object}  response.ErrorResponse
+// @Router       /api/v1/endpoints/{id} [put]
 func (h *EndpointHandler) Update(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {
@@ -132,7 +179,7 @@ func (h *EndpointHandler) Update(c *gin.Context) {
 	}
 
 	var req dto.UpdateEndpointRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "invalid request body: "+err.Error())
 		return
 	}
@@ -166,6 +213,17 @@ func (h *EndpointHandler) Update(c *gin.Context) {
 }
 
 // Delete handles DELETE /api/v1/endpoints/:id
+// @Summary      Delete endpoint
+// @Description  Delete a webhook endpoint and remove its subscriptions
+// @Tags         Endpoints
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Endpoint UUID" format(uuid)
+// @Success      204  "No Content"
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /api/v1/endpoints/{id} [delete]
 func (h *EndpointHandler) Delete(c *gin.Context) {
 	app, ok := middleware.GetApplication(c)
 	if !ok || app == nil {

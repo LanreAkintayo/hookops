@@ -1,0 +1,1938 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "High-performance, fault-tolerant webhook delivery platform with exponential retries, rate limiting, HMAC signing, and dead-letter queues.",
+        "title": "Outpost Webhook Delivery Engine API",
+        "contact": {
+            "name": "Outpost Support"
+        },
+        "license": {
+            "name": "MIT"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/v1/applications": {
+            "post": {
+                "description": "Register a new tenant application and generate an API key (op_live_...)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Applications"
+                ],
+                "summary": "Create application",
+                "parameters": [
+                    {
+                        "description": "Application payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/applications/{id}": {
+            "get": {
+                "description": "Fetch application details by UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Applications"
+                ],
+                "summary": "Get application by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Application UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/deliveries": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query delivery logs with optional filtering by status, endpoint ID, date range, and pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deliveries"
+                ],
+                "summary": "List deliveries",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, delivered, failed, dead_letter)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Filter by endpoint UUID",
+                        "name": "endpoint_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter from timestamp (RFC3339, e.g. 2026-09-01T00:00:00Z)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter to timestamp (RFC3339, e.g. 2026-09-15T23:59:59Z)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default: 20, max: 100)",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/deliveries/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch full forensic details of a delivery attempt including destination HTTP response body",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deliveries"
+                ],
+                "summary": "Get delivery attempt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Delivery Attempt UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/deliveries/{id}/retry": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reset attempt counter and re-queue a failed or dead-lettered delivery attempt for immediate dispatch",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deliveries"
+                ],
+                "summary": "Manually retry delivery",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Delivery Attempt UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/endpoints": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all registered webhook endpoints for the authenticated application",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Endpoints"
+                ],
+                "summary": "List endpoints",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new webhook destination URL and generate an HMAC signing secret (whsec_...)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Endpoints"
+                ],
+                "summary": "Create endpoint",
+                "parameters": [
+                    {
+                        "description": "Endpoint configuration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/endpoints/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch details of a specific webhook endpoint",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Endpoints"
+                ],
+                "summary": "Get endpoint by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update URL, description, status (active/inactive), or rate limit of an endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Endpoints"
+                ],
+                "summary": "Update endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Endpoint update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a webhook endpoint and remove its subscriptions",
+                "tags": [
+                    "Endpoints"
+                ],
+                "summary": "Delete endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/endpoints/{id}/subscriptions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all active event type subscriptions for a specific endpoint",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "List endpoint subscriptions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Subscribe an endpoint to receive events of a specific event type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Subscribe endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/endpoints/{id}/subscriptions/{event_type_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a subscription binding between an endpoint and an event type",
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Unsubscribe endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Endpoint UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event Type UUID",
+                        "name": "event_type_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-types": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch all event types registered in the authenticated application",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Types"
+                ],
+                "summary": "List event types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Define a new event type name in dot-notation (e.g. payment.completed)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Types"
+                ],
+                "summary": "Create event type",
+                "parameters": [
+                    {
+                        "description": "Event type details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-types/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve single event type details by UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Types"
+                ],
+                "summary": "Get event type by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event Type UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an event type by UUID",
+                "tags": [
+                    "Event Types"
+                ],
+                "summary": "Delete event type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event Type UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Ingest a webhook event, check idempotency, schedule delivery attempts to subscribed endpoints, and enqueue tasks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Ingest event",
+                "parameters": [
+                    {
+                        "description": "Event payload and routing parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch details of an ingested event by UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{id}/deliveries": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch all delivery attempts associated with a specific event",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deliveries"
+                ],
+                "summary": "List deliveries for event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{id}/replay": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Queue new delivery attempts for an existing event (failed attempts only by default)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Replay single event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Replay options (failed_only flag)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/replay": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Re-queue delivery attempts matching filter criteria (status, endpoint, date range)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deliveries"
+                ],
+                "summary": "Batch replay deliveries",
+                "parameters": [
+                    {
+                        "description": "Batch replay filter options",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated delivery metrics, volumes, success rates, and endpoint health for the application",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Get delivery statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.StatsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest": {
+            "type": "object",
+            "properties": {
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse": {
+            "type": "object",
+            "properties": {
+                "queued_deliveries": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "rate_limit": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                },
+                "recipient_id": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest": {
+            "type": "object",
+            "required": [
+                "event_type_id"
+            ],
+            "properties": {
+                "event_type_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse": {
+            "type": "object",
+            "properties": {
+                "attempt_number": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "execution_duration_ms": {
+                    "type": "integer"
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "next_retry_at": {
+                    "type": "string"
+                },
+                "response_body": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse": {
+            "type": "object",
+            "properties": {
+                "attempt_number": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "execution_duration_ms": {
+                    "type": "integer"
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "next_retry_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary": {
+            "type": "object",
+            "properties": {
+                "attempt_number": {
+                    "type": "integer"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse": {
+            "type": "object",
+            "properties": {
+                "avg_latency_ms": {
+                    "type": "number"
+                },
+                "dead_letter": {
+                    "type": "integer"
+                },
+                "delivered": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                },
+                "pending": {
+                    "type": "integer"
+                },
+                "success_rate_percent": {
+                    "type": "number"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem": {
+            "type": "object",
+            "properties": {
+                "consecutive_failures": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rate_limit": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse": {
+            "type": "object",
+            "properties": {
+                "application_id": {
+                    "type": "string"
+                },
+                "consecutive_failures": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rate_limit": {
+                    "type": "integer"
+                },
+                "recipient_id": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "integer"
+                },
+                "inactive": {
+                    "type": "integer"
+                },
+                "summary": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EventResponse": {
+            "type": "object",
+            "properties": {
+                "application_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_type_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "idempotency_key": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "recipient_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EventStats": {
+            "type": "object",
+            "properties": {
+                "this_week": {
+                    "type": "integer"
+                },
+                "today": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse": {
+            "type": "object",
+            "properties": {
+                "application_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "idempotency_key": {
+                    "type": "string"
+                },
+                "queued_deliveries": {
+                    "type": "integer"
+                },
+                "recipient_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest": {
+            "type": "object",
+            "properties": {
+                "failed_only": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse": {
+            "type": "object",
+            "properties": {
+                "attempts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary"
+                    }
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "queued_deliveries": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest": {
+            "type": "object",
+            "required": [
+                "event_type",
+                "payload"
+            ],
+            "properties": {
+                "event_type": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "idempotency_key": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "recipient_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "deliveries": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse"
+                },
+                "endpoints": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse"
+                },
+                "events": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventStats"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "endpoint_id": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary"
+                },
+                "event_type_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "rate_limit": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                },
+                "recipient_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "processing",
+                "delivered",
+                "failed",
+                "dead_letter"
+            ],
+            "x-enum-varnames": [
+                "DeliveryStatusPending",
+                "DeliveryStatusProcessing",
+                "DeliveryStatusDelivered",
+                "DeliveryStatusFailed",
+                "DeliveryStatusDeadLetter"
+            ]
+        },
+        "github_com_LanreAkintayo_outpost_internal_models.EndpointStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive"
+            ],
+            "x-enum-varnames": [
+                "EndpointStatusActive",
+                "EndpointStatusInactive"
+            ]
+        },
+        "github_com_LanreAkintayo_outpost_internal_response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "meta": {
+                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginationMeta"
+                }
+            }
+        },
+        "github_com_LanreAkintayo_outpost_internal_response.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Enter your API key with the Bearer prefix, e.g. 'Bearer op_live_...'",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
