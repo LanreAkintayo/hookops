@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,6 +22,12 @@ import (
 	"github.com/LanreAkintayo/outpost/internal/service"
 )
 
+var (
+	errSubMissingEndpointID = uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	errSubMissingEventTypeID = uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	errSubInternalErrorID   = uuid.MustParse("99999999-9999-9999-9999-999999999999")
+)
+
 type mockSubscriptionService struct {
 	subs map[uuid.UUID]*models.SubscriptionWithDetails
 }
@@ -32,6 +39,16 @@ func newMockSubscriptionService() *mockSubscriptionService {
 }
 
 func (m *mockSubscriptionService) Subscribe(ctx context.Context, appID, endpointID uuid.UUID, params service.SubscribeParams) (*models.SubscriptionWithDetails, error) {
+	if endpointID == errSubMissingEndpointID {
+		return nil, repository.ErrEndpointNotFound
+	}
+	if params.EventTypeID == errSubMissingEventTypeID {
+		return nil, repository.ErrEventTypeNotFound
+	}
+	if endpointID == errSubInternalErrorID {
+		return nil, errors.New("db error")
+	}
+
 	for _, s := range m.subs {
 		if s.EndpointID == endpointID && s.EventTypeID == params.EventTypeID {
 			return nil, repository.ErrDuplicateSubscription
@@ -53,6 +70,12 @@ func (m *mockSubscriptionService) Subscribe(ctx context.Context, appID, endpoint
 }
 
 func (m *mockSubscriptionService) Unsubscribe(ctx context.Context, appID, endpointID, eventTypeID uuid.UUID) error {
+	if endpointID == errSubMissingEndpointID {
+		return repository.ErrEndpointNotFound
+	}
+	if endpointID == errSubInternalErrorID {
+		return errors.New("db error")
+	}
 	for id, s := range m.subs {
 		if s.EndpointID == endpointID && s.EventTypeID == eventTypeID {
 			delete(m.subs, id)
@@ -63,6 +86,12 @@ func (m *mockSubscriptionService) Unsubscribe(ctx context.Context, appID, endpoi
 }
 
 func (m *mockSubscriptionService) ListSubscriptions(ctx context.Context, appID, endpointID uuid.UUID) ([]*models.SubscriptionWithDetails, error) {
+	if endpointID == errSubMissingEndpointID {
+		return nil, repository.ErrEndpointNotFound
+	}
+	if endpointID == errSubInternalErrorID {
+		return nil, errors.New("db error")
+	}
 	var list []*models.SubscriptionWithDetails
 	for _, s := range m.subs {
 		if s.EndpointID == endpointID {
@@ -127,6 +156,57 @@ func TestSubscriptionHandler(t *testing.T) {
 		assert.Equal(t, "payment.succeeded", resp.EventType.Name)
 	})
 
+	t.Run("POST rejects malformed JSON", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + endpointID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader([]byte("{invalid-json")))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("POST returns 404 when endpoint not found", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		reqBody, _ := json.Marshal(dto.CreateSubscriptionRequest{EventTypeID: eventTypeID})
+		url := "/api/v1/endpoints/" + errSubMissingEndpointID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("POST returns 404 when event type not found", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		reqBody, _ := json.Marshal(dto.CreateSubscriptionRequest{EventTypeID: errSubMissingEventTypeID})
+		url := "/api/v1/endpoints/" + endpointID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("POST returns 500 on server error", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		reqBody, _ := json.Marshal(dto.CreateSubscriptionRequest{EventTypeID: eventTypeID})
+		url := "/api/v1/endpoints/" + errSubInternalErrorID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
+
 	t.Run("POST /api/v1/endpoints/:id/subscriptions rejects duplicate with 409 Conflict", func(t *testing.T) {
 		svc := newMockSubscriptionService()
 		r := setupSubscriptionTestRouter(svc, app)
@@ -188,6 +268,41 @@ func TestSubscriptionHandler(t *testing.T) {
 		assert.Equal(t, "payment.succeeded", list[0].EventType.Name)
 	})
 
+	t.Run("GET rejects invalid endpoint UUID with 400", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/endpoints/not-a-uuid/subscriptions", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("GET returns 404 when endpoint missing", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + errSubMissingEndpointID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodGet, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("GET returns 500 on server error", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + errSubInternalErrorID.String() + "/subscriptions"
+		req, _ := http.NewRequest(http.MethodGet, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
+
 	t.Run("DELETE /api/v1/endpoints/:id/subscriptions/:event_type_id unsubscribes", func(t *testing.T) {
 		svc := newMockSubscriptionService()
 		_, _ = svc.Subscribe(context.Background(), app.ID, endpointID, service.SubscribeParams{
@@ -201,6 +316,66 @@ func TestSubscriptionHandler(t *testing.T) {
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusNoContent, rec.Code)
+	})
+
+	t.Run("DELETE rejects invalid endpoint UUID with 400", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/not-a-uuid/subscriptions/" + eventTypeID.String()
+		req, _ := http.NewRequest(http.MethodDelete, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("DELETE rejects invalid event type UUID with 400", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + endpointID.String() + "/subscriptions/not-a-uuid"
+		req, _ := http.NewRequest(http.MethodDelete, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("DELETE returns 404 when endpoint missing", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + errSubMissingEndpointID.String() + "/subscriptions/" + eventTypeID.String()
+		req, _ := http.NewRequest(http.MethodDelete, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("DELETE returns 404 when subscription missing", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + endpointID.String() + "/subscriptions/" + eventTypeID.String()
+		req, _ := http.NewRequest(http.MethodDelete, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("DELETE returns 500 on server error", func(t *testing.T) {
+		svc := newMockSubscriptionService()
+		r := setupSubscriptionTestRouter(svc, app)
+
+		url := "/api/v1/endpoints/" + errSubInternalErrorID.String() + "/subscriptions/" + eventTypeID.String()
+		req, _ := http.NewRequest(http.MethodDelete, url, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	})
 
 	t.Run("Rejects unauthenticated requests with 401", func(t *testing.T) {

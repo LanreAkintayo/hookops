@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,6 +20,8 @@ import (
 	"github.com/LanreAkintayo/outpost/internal/models"
 	"github.com/LanreAkintayo/outpost/internal/service"
 )
+
+var errEventInternalID = uuid.MustParse("99999999-9999-9999-9999-999999999999")
 
 type mockEventService struct {
 	events   map[uuid.UUID]*models.Event
@@ -39,6 +42,12 @@ func (m *mockEventService) SendEvent(ctx context.Context, appID uuid.UUID, param
 	if len(params.Payload) == 0 {
 		return nil, service.ErrInvalidPayload
 	}
+	if params.EventType == "missing.type" {
+		return nil, service.ErrTargetEventTypeNotFound
+	}
+	if params.EventType == "server.error" {
+		return nil, errors.New("db error")
+	}
 
 	ev := &models.Event{
 		ID:            uuid.New(),
@@ -57,6 +66,9 @@ func (m *mockEventService) SendEvent(ctx context.Context, appID uuid.UUID, param
 }
 
 func (m *mockEventService) GetEvent(ctx context.Context, appID, id uuid.UUID) (*models.Event, error) {
+	if id == errEventInternalID {
+		return nil, errors.New("db error")
+	}
 	ev, ok := m.events[id]
 	if !ok || ev.ApplicationID != appID {
 		return nil, service.ErrEventNotFound
@@ -65,6 +77,9 @@ func (m *mockEventService) GetEvent(ctx context.Context, appID, id uuid.UUID) (*
 }
 
 func (m *mockEventService) ReplayEvent(ctx context.Context, appID, eventID uuid.UUID, failedOnly bool) ([]*models.DeliveryAttempt, error) {
+	if eventID == errEventInternalID {
+		return nil, errors.New("db error")
+	}
 	ev, ok := m.events[eventID]
 	if !ok || ev.ApplicationID != appID {
 		return nil, service.ErrEventNotFound
@@ -125,6 +140,57 @@ func TestEventHandler(t *testing.T) {
 		assert.Equal(t, "accepted", res["status"])
 	})
 
+	t.Run("POST /api/v1/events rejects invalid body", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events", bytes.NewBufferString("{invalid-json"))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("POST /api/v1/events rejects empty event type", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		payload := `{"event_type":"","payload":{"order_id":"ord_123"}}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events", bytes.NewBufferString(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("POST /api/v1/events returns 404 for unknown event type", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		payload := `{"event_type":"missing.type","payload":{"order_id":"ord_123"}}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events", bytes.NewBufferString(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("POST /api/v1/events returns 500 on server error", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		payload := `{"event_type":"server.error","payload":{"order_id":"ord_123"}}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events", bytes.NewBufferString(payload))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
 	t.Run("GET /api/v1/events/:id retrieves event", func(t *testing.T) {
 		svc := newMockEventService()
 		r := setupEventTestRouter(svc, true, app)
@@ -142,6 +208,39 @@ func TestEventHandler(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("GET /api/v1/events/:id rejects invalid non-UUID", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/events/not-a-uuid", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("GET /api/v1/events/:id returns 404 when not found", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/events/"+uuid.NewString(), nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("GET /api/v1/events/:id returns 500 on server error", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/events/"+errEventInternalID.String(), nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 
 	t.Run("POST /api/v1/events/:id/replay successfully replays event", func(t *testing.T) {
@@ -169,6 +268,29 @@ func TestEventHandler(t *testing.T) {
 		assert.Equal(t, float64(1), res["queued_deliveries"])
 	})
 
+	t.Run("POST /api/v1/events/:id/replay rejects non-UUID", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events/not-a-uuid/replay", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("POST /api/v1/events/:id/replay rejects malformed JSON", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events/"+uuid.NewString()+"/replay", bytes.NewBufferString("{invalid-json"))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
 	t.Run("POST /api/v1/events/:id/replay returns 404 for nonexistent event", func(t *testing.T) {
 		svc := newMockEventService()
 		r := setupEventTestRouter(svc, true, app)
@@ -178,6 +300,17 @@ func TestEventHandler(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+
+	t.Run("POST /api/v1/events/:id/replay returns 500 on server error", func(t *testing.T) {
+		svc := newMockEventService()
+		r := setupEventTestRouter(svc, true, app)
+
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/events/"+errEventInternalID.String()+"/replay", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 
 	t.Run("Rejects unauthenticated requests with 401", func(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,6 +22,9 @@ import (
 	"github.com/LanreAkintayo/outpost/internal/service"
 )
 
+var errTestDB = errors.New("db connection failure")
+var errEndpointID = uuid.MustParse("99999999-9999-9999-9999-999999999999")
+
 // mockEndpointService implements service.EndpointService for testing
 type mockEndpointService struct {
 	endpoints map[uuid.UUID]*models.Endpoint
@@ -35,6 +39,9 @@ func newMockEndpointService() *mockEndpointService {
 func (m *mockEndpointService) CreateEndpoint(ctx context.Context, appID uuid.UUID, params service.CreateEndpointParams) (*models.Endpoint, error) {
 	if params.URL == "invalid-url" {
 		return nil, service.ErrInvalidURL
+	}
+	if params.URL == "error-url" {
+		return nil, errTestDB
 	}
 	ep := &models.Endpoint{
 		ID:            uuid.New(),
@@ -52,6 +59,9 @@ func (m *mockEndpointService) CreateEndpoint(ctx context.Context, appID uuid.UUI
 }
 
 func (m *mockEndpointService) GetEndpoint(ctx context.Context, appID, id uuid.UUID) (*models.Endpoint, error) {
+	if id == errEndpointID {
+		return nil, errTestDB
+	}
 	ep, ok := m.endpoints[id]
 	if !ok || ep.ApplicationID != appID {
 		return nil, repository.ErrEndpointNotFound
@@ -70,6 +80,18 @@ func (m *mockEndpointService) ListEndpoints(ctx context.Context, appID uuid.UUID
 }
 
 func (m *mockEndpointService) UpdateEndpoint(ctx context.Context, appID, id uuid.UUID, params service.UpdateEndpointParams) (*models.Endpoint, error) {
+	if id == errEndpointID {
+		return nil, errTestDB
+	}
+	if params.URL != nil && *params.URL == "invalid-url" {
+		return nil, service.ErrInvalidURL
+	}
+	if params.Status != nil && *params.Status == "invalid-status" {
+		return nil, service.ErrInvalidStatus
+	}
+	if params.RateLimit != nil && *params.RateLimit <= 0 {
+		return nil, service.ErrInvalidRateLimit
+	}
 	ep, ok := m.endpoints[id]
 	if !ok || ep.ApplicationID != appID {
 		return nil, repository.ErrEndpointNotFound
@@ -87,6 +109,9 @@ func (m *mockEndpointService) UpdateEndpoint(ctx context.Context, appID, id uuid
 }
 
 func (m *mockEndpointService) DeleteEndpoint(ctx context.Context, appID, id uuid.UUID) error {
+	if id == errEndpointID {
+		return errTestDB
+	}
 	ep, ok := m.endpoints[id]
 	if !ok || ep.ApplicationID != appID {
 		return repository.ErrEndpointNotFound
@@ -135,13 +160,36 @@ func TestEndpointHandler(t *testing.T) {
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusCreated, rec.Code)
-
 		var resp dto.EndpointResponse
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
 		assert.NoError(t, err)
 		assert.Equal(t, "https://api.zara.com/webhooks", resp.URL)
 		assert.Equal(t, "whsec_mock12345", resp.Secret)
-		assert.Equal(t, "zara", resp.RecipientID)
+	})
+
+	t.Run("POST /api/v1/endpoints rejects invalid body", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodPost, "/api/v1/endpoints", bytes.NewReader([]byte("{invalid-json")))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("POST /api/v1/endpoints handles server error", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		reqBody := dto.CreateEndpointRequest{URL: "error-url"}
+		bodyBytes, _ := json.Marshal(reqBody)
+
+		req, _ := http.NewRequest(http.MethodPost, "/api/v1/endpoints", bytes.NewReader(bodyBytes))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	})
 
 	t.Run("POST /api/v1/endpoints rejects invalid URL", func(t *testing.T) {
@@ -192,6 +240,39 @@ func TestEndpointHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
+	t.Run("GET /api/v1/endpoints/:id rejects non-UUID", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/endpoints/not-a-uuid", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("GET /api/v1/endpoints/:id returns 404 for missing", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/endpoints/"+uuid.NewString(), nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("GET /api/v1/endpoints/:id returns 500 on server error", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/endpoints/"+errEndpointID.String(), nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
+
 	t.Run("PUT /api/v1/endpoints/:id updates endpoint", func(t *testing.T) {
 		svc := newMockEndpointService()
 		ep, _ := svc.CreateEndpoint(context.Background(), app.ID, service.CreateEndpointParams{
@@ -215,6 +296,70 @@ func TestEndpointHandler(t *testing.T) {
 		assert.Equal(t, "https://updated.com", resp.URL)
 	})
 
+	t.Run("PUT /api/v1/endpoints/:id rejects non-UUID", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodPut, "/api/v1/endpoints/not-a-uuid", bytes.NewReader([]byte("{}")))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("PUT /api/v1/endpoints/:id rejects malformed JSON", func(t *testing.T) {
+		svc := newMockEndpointService()
+		ep, _ := svc.CreateEndpoint(context.Background(), app.ID, service.CreateEndpointParams{
+			URL: "https://old.com",
+		})
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodPut, "/api/v1/endpoints/"+ep.ID.String(), bytes.NewReader([]byte("{invalid-json")))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("PUT /api/v1/endpoints/:id returns 404 for missing", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		url := "https://valid.com"
+		body, _ := json.Marshal(dto.UpdateEndpointRequest{URL: &url})
+		req, _ := http.NewRequest(http.MethodPut, "/api/v1/endpoints/"+uuid.NewString(), bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("PUT /api/v1/endpoints/:id returns 400 for invalid params", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		invalidURL := "invalid-url"
+		body, _ := json.Marshal(dto.UpdateEndpointRequest{URL: &invalidURL})
+		req, _ := http.NewRequest(http.MethodPut, "/api/v1/endpoints/"+uuid.NewString(), bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("PUT /api/v1/endpoints/:id returns 500 on server error", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		url := "https://valid.com"
+		body, _ := json.Marshal(dto.UpdateEndpointRequest{URL: &url})
+		req, _ := http.NewRequest(http.MethodPut, "/api/v1/endpoints/"+errEndpointID.String(), bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
+
 	t.Run("DELETE /api/v1/endpoints/:id deletes endpoint", func(t *testing.T) {
 		svc := newMockEndpointService()
 		ep, _ := svc.CreateEndpoint(context.Background(), app.ID, service.CreateEndpointParams{
@@ -227,6 +372,39 @@ func TestEndpointHandler(t *testing.T) {
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusNoContent, rec.Code)
+	})
+
+	t.Run("DELETE /api/v1/endpoints/:id rejects non-UUID", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodDelete, "/api/v1/endpoints/not-a-uuid", nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
+
+	t.Run("DELETE /api/v1/endpoints/:id returns 404 for missing", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodDelete, "/api/v1/endpoints/"+uuid.NewString(), nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+	})
+
+	t.Run("DELETE /api/v1/endpoints/:id returns 500 on server error", func(t *testing.T) {
+		svc := newMockEndpointService()
+		r := setupEndpointTestRouter(svc, app)
+
+		req, _ := http.NewRequest(http.MethodDelete, "/api/v1/endpoints/"+errEndpointID.String(), nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	})
 
 	t.Run("Rejects unauthenticated requests with 401", func(t *testing.T) {

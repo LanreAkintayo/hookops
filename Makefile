@@ -1,4 +1,4 @@
-.PHONY: db-up db-down migrate-up migrate-down build run test lint swagger test-integration
+.PHONY: db-up db-down migrate-up migrate-down build run test lint swagger test-integration test-coverage
 
 db-up:
 	docker compose up -d
@@ -40,11 +40,21 @@ test:
 	go test -v ./...
 
 lint:
-	golangci-lint run ./...
+	@if [ -d /snap/go/11262 ]; then \
+		GOROOT=/snap/go/11262 PATH=/snap/go/11262/bin:$$PATH golangci-lint run ./...; \
+	else \
+		golangci-lint run ./...; \
+	fi
 
 swagger:
 	swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal
 
 test-integration:
 	go test -tags=integration -v -count=1 ./tests/integration/...
+
+test-coverage:
+	go test -coverpkg=./internal/config,./internal/engine,./internal/handler,./internal/middleware,./internal/response,./internal/router,./internal/service -coverprofile=coverage.out ./internal/config ./internal/engine ./internal/handler ./internal/middleware ./internal/response ./internal/router ./internal/service
+	go tool cover -func=coverage.out
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage HTML report generated at coverage.html"
 
