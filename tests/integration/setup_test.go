@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/database"
-	"github.com/LanreAkintayo/outpost/internal/engine"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/database"
+	"github.com/LanreAkintayo/hookops/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 type TestSuite struct {
@@ -42,7 +42,7 @@ func setupTestSuite(t *testing.T) *TestSuite {
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgres://postgres:postgres@localhost:5433/outpost?sslmode=disable"
+		dbURL = "postgres://postgres:postgres@localhost:5433/hookops?sslmode=disable"
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

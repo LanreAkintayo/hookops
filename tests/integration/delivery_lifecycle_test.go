@@ -16,9 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 func TestDeliveryLifecycle_E2E(t *testing.T) {
@@ -34,9 +34,9 @@ func TestDeliveryLifecycle_E2E(t *testing.T) {
 	// 1. Mock Customer Webhook Destination
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedCount.Add(1)
-		receivedEventID = r.Header.Get("X-Outpost-Event-ID")
-		receivedEventType = r.Header.Get("X-Outpost-Event")
-		receivedSignature = r.Header.Get("X-Outpost-Signature")
+		receivedEventID = r.Header.Get("X-HookOps-Event-ID")
+		receivedEventType = r.Header.Get("X-HookOps-Event")
+		receivedSignature = r.Header.Get("X-HookOps-Signature")
 
 		body, err := io.ReadAll(r.Body)
 		if err == nil {

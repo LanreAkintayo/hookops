@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 func TestIdempotency_E2E(t *testing.T) {
