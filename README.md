@@ -1,8 +1,8 @@
-# Outpost
+# HookOps
 
 Multi-tenant webhook delivery engine built with Go and PostgreSQL.
 
-Outpost accepts webhook events from your application, queues them in PostgreSQL, and delivers them to customer endpoints with HMAC-SHA256 signatures, exponential backoff, per-endpoint rate limiting, circuit breakers, and dead-letter queues.
+HookOps accepts webhook events from your application, queues them in PostgreSQL, and delivers them to customer endpoints with HMAC-SHA256 signatures, exponential backoff, per-endpoint rate limiting, circuit breakers, and dead-letter queues.
 
 [![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -13,9 +13,11 @@ Outpost accepts webhook events from your application, queues them in PostgreSQL,
 
 ## About
 
-Outpost handles the full lifecycle of outbound webhooks. Your app publishes an event, Outpost fans it out to every subscribed endpoint, signs each payload, delivers it, and deals with failures along the way: retries with backoff, per-endpoint rate limiting, dead-letter queues, circuit breakers.
+![HookOps Webhook Workflow](assets/workflow.png)
 
-Where it goes further is recovery. When an endpoint crosses the failure threshold and gets disabled, Outpost doesn't just leave it there. It periodically probes the endpoint and re-enables it automatically once it starts responding again. No one has to remember to go flip it back on.
+HookOps handles the full lifecycle of outbound webhooks. Your app publishes an event, HookOps fans it out to every subscribed endpoint, signs each payload, delivers it, and deals with failures along the way: retries with backoff, per-endpoint rate limiting, dead-letter queues, circuit breakers.
+
+Where it goes further is recovery. When an endpoint crosses the failure threshold and gets disabled, HookOps doesn't just leave it there. It periodically probes the endpoint and re-enables it automatically once it starts responding again. No one has to remember to go flip it back on.
 
 The entire system runs on Go and PostgreSQL. No Redis, no Kafka, no external message broker. PostgreSQL handles both storage and job queuing via `SKIP LOCKED`.
 
@@ -23,22 +25,13 @@ The entire system runs on Go and PostgreSQL. No Redis, no Kafka, no external mes
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    App["Your App"] -->|POST /api/v1/events| API["Outpost API"]
-    API -->|Insert pending tasks| PG[(PostgreSQL)]
-    PG -->|"SELECT ... FOR UPDATE SKIP LOCKED"| Disp["Dispatcher"]
-    Disp -->|Enqueue| Pool["Worker Pool<br/>(N goroutines)"]
-    Pool -->|"HMAC-sign + POST"| EP1["Endpoint A ✅"]
-    Pool -->|"HMAC-sign + POST"| EP2["Endpoint B 🔄"]
-    Pool -->|Record outcome| PG
-```
+![HookOps Engine Architecture](assets/architecture.png)
 
 ### How Delivery Works
 
-1. **Event ingestion.** Your app sends a `POST /api/v1/events` with a JSON payload and event type. Outpost looks up every endpoint subscribed to that event type and inserts one `delivery_attempt` row per endpoint in a single transaction.
+1. **Event ingestion.** Your app sends a `POST /api/v1/events` with a JSON payload and event type. HookOps looks up every endpoint subscribed to that event type and inserts one `delivery_attempt` row per endpoint in a single transaction.
 
-2. **Polling dispatcher.** A background goroutine ticks on a configurable interval (default 2s) and runs a single SQL statement that atomically claims a batch of pending attempts using `SELECT ... FOR UPDATE SKIP LOCKED`. Rows are locked at the database level, so multiple Outpost instances can poll the same table without claiming the same task.
+2. **Polling dispatcher.** A background goroutine ticks on a configurable interval (default 2s) and runs a single SQL statement that atomically claims a batch of pending attempts using `SELECT ... FOR UPDATE SKIP LOCKED`. Rows are locked at the database level, so multiple HookOps instances can poll the same table without claiming the same task.
 
    The dispatcher also implements adaptive drain: if a full batch is returned, it immediately queries again without waiting for the next tick. Low throughput polls lazily, high throughput drains aggressively.
 
@@ -95,17 +88,17 @@ The jitter prevents thundering herd problems when a downstream endpoint recovers
 
 ## Security
 
-Every outbound webhook is signed using HMAC-SHA256 with a per-endpoint secret. The signature is sent as `X-Outpost-Signature: sha256=<hex>`.
+Every outbound webhook is signed using HMAC-SHA256 with a per-endpoint secret. The signature is sent as `X-HookOps-Signature: sha256=<hex>`.
 
 **Headers sent with every webhook:**
 
 | Header | Example |
 |---|---|
-| `X-Outpost-Signature` | `sha256=d3b07384d113edec49eaa6...` |
-| `X-Outpost-Event` | `invoice.paid` |
-| `X-Outpost-Event-ID` | `b9f5f0b4-3c1d-4e9b-b0b2-7a5f6e8c9d0a` |
-| `X-Outpost-Timestamp` | `1726425937` |
-| `User-Agent` | `Outpost-Webhook-Engine/1.0` |
+| `X-HookOps-Signature` | `sha256=d3b07384d113edec49eaa6...` |
+| `X-HookOps-Event` | `invoice.paid` |
+| `X-HookOps-Event-ID` | `b9f5f0b4-3c1d-4e9b-b0b2-7a5f6e8c9d0a` |
+| `X-HookOps-Timestamp` | `1726425937` |
+| `User-Agent` | `HookOps-Webhook-Engine/1.0` |
 
 ### Verifying Signatures
 
@@ -200,7 +193,7 @@ curl -s -X POST http://localhost:8080/api/v1/events \
 ## Project Structure
 
 ```
-outpost/
+hookops/
 ├── cmd/api/main.go              # Entrypoint, dependency wiring, graceful shutdown
 ├── internal/
 │   ├── config/                  # Env-based configuration with validation
@@ -235,12 +228,12 @@ outpost/
 ## Running Locally
 
 ```bash
-# Start PostgreSQL and Outpost
+# Start PostgreSQL and HookOps
 docker compose up -d
 
 # Verify
 curl http://localhost:8080/health
-# {"status":"healthy","service":"outpost","database":"connected"}
+# {"status":"healthy","service":"hookops","database":"connected"}
 
 # Or run outside Docker
 cp .env.example .env
@@ -262,7 +255,7 @@ All settings via environment variables:
 | `DB_PORT` | `5433` | PostgreSQL port |
 | `DB_USER` | `postgres` | Database user |
 | `DB_PASSWORD` | `postgres` | Database password |
-| `DB_NAME` | `outpost` | Database name |
+| `DB_NAME` | `hookops` | Database name |
 | `DB_SSL_MODE` | `disable` | `disable` or `require` |
 | `WORKER_COUNT` | `5` | Delivery worker goroutines |
 | `QUEUE_SIZE` | `100` | Buffered channel capacity |
@@ -296,7 +289,7 @@ Integration tests run against a real PostgreSQL instance and cover the full life
 
 8 migrations applied in order:
 
-1. **applications** - Tenant accounts with auto-generated `op_live_...` API keys
+1. **applications** - Tenant accounts with auto-generated `ho_live_...` API keys
 2. **endpoints** - Webhook destination URLs with unique signing secrets (`whsec_...`)
 3. **event_types** - Named event categories (e.g. `invoice.paid`)
 4. **subscriptions** - Many-to-many link between endpoints and event types

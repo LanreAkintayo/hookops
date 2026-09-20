@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse:
     properties:
       api_key:
         type: string
@@ -13,25 +13,25 @@ definitions:
       updated_at:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.BatchReplayRequest:
     properties:
       endpoint_id:
         type: string
       from:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus'
       to:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.BatchReplayResponse:
     properties:
       queued_deliveries:
         type: integer
       status:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.CreateApplicationRequest:
     properties:
       name:
         maxLength: 255
@@ -40,7 +40,7 @@ definitions:
     required:
     - name
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.CreateEndpointRequest:
     properties:
       description:
         maxLength: 500
@@ -57,7 +57,7 @@ definitions:
     required:
     - url
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.CreateEventTypeRequest:
     properties:
       description:
         maxLength: 500
@@ -67,14 +67,14 @@ definitions:
     required:
     - name
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.CreateSubscriptionRequest:
     properties:
       event_type_id:
         type: string
     required:
     - event_type_id
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptDetailResponse:
     properties:
       attempt_number:
         type: integer
@@ -97,11 +97,11 @@ definitions:
       response_body:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus'
       updated_at:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse:
     properties:
       attempt_number:
         type: integer
@@ -122,11 +122,11 @@ definitions:
       next_retry_at:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus'
       updated_at:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary:
+  github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptSummary:
     properties:
       attempt_number:
         type: integer
@@ -135,9 +135,9 @@ definitions:
       id:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus'
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.DeliveryStatsResponse:
     properties:
       avg_latency_ms:
         type: number
@@ -154,7 +154,7 @@ definitions:
       total:
         type: integer
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem:
+  github_com_LanreAkintayo_hookops_internal_dto.EndpointHealthItem:
     properties:
       consecutive_failures:
         type: integer
@@ -167,7 +167,7 @@ definitions:
       url:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse:
     properties:
       application_id:
         type: string
@@ -186,13 +186,13 @@ definitions:
       secret:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.EndpointStatus'
       updated_at:
         type: string
       url:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.EndpointStatsResponse:
     properties:
       active:
         type: integer
@@ -200,12 +200,12 @@ definitions:
         type: integer
       summary:
         items:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointHealthItem'
         type: array
       total:
         type: integer
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EventResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.EventResponse:
     properties:
       application_id:
         type: string
@@ -224,7 +224,7 @@ definitions:
       recipient_id:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EventStats:
+  github_com_LanreAkintayo_hookops_internal_dto.EventStats:
     properties:
       this_week:
         type: integer
@@ -233,7 +233,7 @@ definitions:
       total:
         type: integer
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse:
     properties:
       application_id:
         type: string
@@ -248,7 +248,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary:
+  github_com_LanreAkintayo_hookops_internal_dto.EventTypeSummary:
     properties:
       description:
         type: string
@@ -257,7 +257,7 @@ definitions:
       name:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.IngestEventResponse:
     properties:
       created_at:
         type: string
@@ -274,23 +274,23 @@ definitions:
       status:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.ReplayEventRequest:
     properties:
       failed_only:
         type: boolean
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.ReplayEventResponse:
     properties:
       attempts:
         items:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptSummary'
         type: array
       event_id:
         type: string
       queued_deliveries:
         type: integer
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.SendEventRequest:
     properties:
       event_type:
         maxLength: 255
@@ -308,29 +308,29 @@ definitions:
     - event_type
     - payload
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.StatsResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.StatsResponse:
     properties:
       deliveries:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryStatsResponse'
       endpoints:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointStatsResponse'
       events:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventStats'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventStats'
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse:
+  github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse:
     properties:
       created_at:
         type: string
       endpoint_id:
         type: string
       event_type:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeSummary'
       event_type_id:
         type: string
       id:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest:
+  github_com_LanreAkintayo_hookops_internal_dto.UpdateEndpointRequest:
     properties:
       description:
         type: string
@@ -341,11 +341,11 @@ definitions:
       recipient_id:
         type: string
       status:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_models.EndpointStatus'
       url:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus:
+  github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus:
     enum:
     - pending
     - processing
@@ -359,7 +359,7 @@ definitions:
     - DeliveryStatusDelivered
     - DeliveryStatusFailed
     - DeliveryStatusDeadLetter
-  github_com_LanreAkintayo_outpost_internal_models.EndpointStatus:
+  github_com_LanreAkintayo_hookops_internal_models.EndpointStatus:
     enum:
     - active
     - inactive
@@ -367,18 +367,18 @@ definitions:
     x-enum-varnames:
     - EndpointStatusActive
     - EndpointStatusInactive
-  github_com_LanreAkintayo_outpost_internal_response.ErrorResponse:
+  github_com_LanreAkintayo_hookops_internal_response.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse:
+  github_com_LanreAkintayo_hookops_internal_response.PaginatedResponse:
     properties:
       data: {}
       meta:
-        $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginationMeta'
+        $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.PaginationMeta'
     type: object
-  github_com_LanreAkintayo_outpost_internal_response.PaginationMeta:
+  github_com_LanreAkintayo_hookops_internal_response.PaginationMeta:
     properties:
       page:
         type: integer
@@ -391,45 +391,45 @@ definitions:
     type: object
 info:
   contact:
-    name: Outpost Support
+    name: HookOps Support
   description: High-performance, fault-tolerant webhook delivery platform with exponential
     retries, rate limiting, HMAC signing, and dead-letter queues.
   license:
     name: MIT
-  title: Outpost Webhook Delivery Engine API
+  title: HookOps Webhook Delivery Engine API
   version: "1.0"
 paths:
   /api/v1/applications:
     post:
       consumes:
       - application/json
-      description: Register a new tenant application and generate an API key (op_live_...)
+      description: Register a new tenant application and generate an API key (ho_live_...)
       parameters:
       - description: Application payload
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateApplicationRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       summary: Create application
       tags:
       - Applications
@@ -449,19 +449,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       summary: Get application by ID
       tags:
       - Applications
@@ -501,19 +501,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.PaginatedResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List deliveries
@@ -536,23 +536,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptDetailResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get delivery attempt
@@ -575,23 +575,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Manually retry delivery
@@ -607,16 +607,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse'
+              $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse'
             type: array
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List endpoints
@@ -633,26 +633,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateEndpointRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create endpoint
@@ -674,19 +674,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete endpoint
@@ -707,23 +707,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get endpoint by ID
@@ -746,30 +746,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.UpdateEndpointRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update endpoint
@@ -792,24 +792,24 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse'
+              $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List endpoint subscriptions
@@ -831,34 +831,34 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateSubscriptionRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Subscribe endpoint
@@ -887,19 +887,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Unsubscribe endpoint
@@ -915,16 +915,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse'
+              $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse'
             type: array
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List event types
@@ -940,30 +940,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateEventTypeRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create event type
@@ -985,19 +985,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete event type
@@ -1018,23 +1018,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get event type by ID
@@ -1052,30 +1052,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SendEventRequest'
       produces:
       - application/json
       responses:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.IngestEventResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Ingest event
@@ -1097,23 +1097,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get event by ID
@@ -1136,20 +1136,20 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse'
+              $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: List deliveries for event
@@ -1172,30 +1172,30 @@ paths:
         in: body
         name: request
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ReplayEventRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ReplayEventResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Replay single event
@@ -1213,26 +1213,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest'
+          $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.BatchReplayRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.BatchReplayResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Batch replay deliveries
@@ -1248,15 +1248,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_dto.StatsResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_dto.StatsResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse'
+            $ref: '#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get delivery statistics
@@ -1264,7 +1264,7 @@ paths:
       - Statistics
 securityDefinitions:
   BearerAuth:
-    description: Enter your API key with the Bearer prefix, e.g. 'Bearer op_live_...'
+    description: Enter your API key with the Bearer prefix, e.g. 'Bearer ho_live_...'
     in: header
     name: Authorization
     type: apiKey

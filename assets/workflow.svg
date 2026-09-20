@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 820" width="1440" height="820">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&amp;family=Montserrat:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap');
+
+      .t-title { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; letter-spacing: -0.5px; }
+      .t-sub   { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 600; }
+      .t-body  { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; }
+      .t-mono  { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; font-weight: 500; }
+    </style>
+
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#38BDF8"/>
+    </marker>
+  </defs>
+
+  <!-- Clean, Deep Background -->
+  <rect width="1440" height="820" fill="#0A0D14"/>
+
+  <!-- Minimal Dots Pattern -->
+  <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+    <circle cx="2" cy="2" r="1" fill="#1A202C"/>
+  </pattern>
+  <rect width="1440" height="820" fill="url(#grid)"/>
+
+  <!-- ==================== HEADER ==================== -->
+  <!-- Header Subtitle -->
+  <g transform="translate(60, 45)">
+    <text class="t-title" x="0" y="32" font-size="28" fill="#F8FAFC">HOOKOPS</text>
+    <rect x="150" y="10" width="220" height="26" rx="4" fill="#131926" stroke="#222B3D" stroke-width="1"/>
+    <text class="t-mono" x="260" y="27" font-size="11" fill="#38BDF8" font-weight="600" text-anchor="middle">WEBHOOK AS A SERVICE</text>
+    
+    <text class="t-body" x="0" y="66" font-size="13.5" fill="#E2E8F0">How client applications integrate with HookOps to reliably deliver webhooks</text>
+
+    <!-- Tech Pills -->
+    <g transform="translate(1000, 10)">
+      <rect x="0" y="0" width="90" height="26" rx="4" fill="#131926" stroke="#222B3D" stroke-width="1"/>
+      <text class="t-mono" x="45" y="17" font-size="11" fill="#E2E8F0" text-anchor="middle">Go 1.26+</text>
+
+      <rect x="100" y="0" width="125" height="26" rx="4" fill="#131926" stroke="#222B3D" stroke-width="1"/>
+      <text class="t-mono" x="162" y="17" font-size="11" fill="#E2E8F0" text-anchor="middle">PostgreSQL 16</text>
+
+      <rect x="235" y="0" width="85" height="26" rx="4" fill="#131926" stroke="#222B3D" stroke-width="1"/>
+      <text class="t-mono" x="277" y="17" font-size="11" fill="#38BDF8" text-anchor="middle">REST API</text>
+    </g>
+  </g>
+
+  <!-- ==================== 3 MAIN CARDS ==================== -->
+
+  <!-- CARD 1: YOUR APPLICATION -->
+  <g transform="translate(60, 140)">
+    <rect width="360" height="420" rx="8" fill="#111622" stroke="#1F283B" stroke-width="1.2"/>
+    
+    <text class="t-mono" x="24" y="36" font-size="11" fill="#38BDF8" font-weight="700" letter-spacing="1">STEP 01</text>
+    <text class="t-title" x="24" y="66" font-size="20" fill="#F8FAFC">Your Application</text>
+    <text class="t-body" x="24" y="88" font-size="12" fill="#94A3B8">Your core backend platform</text>
+
+    <line x1="24" y1="110" x2="336" y2="110" stroke="#1A2233" stroke-width="1"/>
+
+    <!-- Action 1: Onboarding -->
+    <text class="t-sub" x="24" y="140" font-size="13" fill="#F8FAFC">1. Setup (One-Time)</text>
+    <text class="t-mono" x="24" y="164" font-size="11.5" fill="#E2E8F0">• Register application (get API key)</text>
+    <text class="t-mono" x="24" y="186" font-size="11.5" fill="#E2E8F0">• Define event types &amp; schemas</text>
+    <text class="t-mono" x="24" y="208" font-size="11.5" fill="#E2E8F0">• Customers subscribe webhook URLs</text>
+
+    <!-- Action 2: Publishing -->
+    <text class="t-sub" x="24" y="248" font-size="13" fill="#F8FAFC">2. Publish Event</text>
+    <text class="t-body" x="24" y="270" font-size="11" fill="#CBD5E1">Fire and forget on any user event:</text>
+
+    <!-- Code Pill -->
+    <rect x="24" y="286" width="312" height="46" rx="5" fill="#0A0D14" stroke="#1A2233" stroke-width="1"/>
+    <text class="t-mono" x="38" y="310" font-size="13" fill="#38BDF8">POST /api/v1/events</text>
+    <text class="t-mono" x="38" y="326" font-size="11" fill="#94A3B8">Payload + Idempotency-Key</text>
+
+    <!-- Fast Return Badge -->
+    <rect x="24" y="354" width="312" height="38" rx="5" fill="#0A1813" stroke="#065F46" stroke-width="1"/>
+    <text class="t-mono" x="40" y="378" font-size="12" fill="#34D399" font-weight="600">✓ 202 Accepted (5ms)</text>
+  </g>
+
+  <!-- ARROW 1: Hand-Off -->
+  <g transform="translate(420, 350)">
+    <line x1="12" y1="0" x2="68" y2="0" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <text class="t-mono" x="40" y="-12" font-size="10" fill="#38BDF8" font-weight="600" text-anchor="middle">REST POST</text>
+    <text class="t-mono" x="40" y="18" font-size="9" fill="#94A3B8" text-anchor="middle">5ms Hand-off</text>
+  </g>
+
+  <!-- CARD 2: HOOKOPS ENGINE -->
+  <g transform="translate(500, 140)">
+    <rect width="440" height="420" rx="8" fill="#111622" stroke="#0284C7" stroke-width="1.6"/>
+    
+    <text class="t-mono" x="28" y="36" font-size="11" fill="#38BDF8" font-weight="700" letter-spacing="1">STEP 02 • THE BUFFER</text>
+    <text class="t-title" x="28" y="66" font-size="20" fill="#F8FAFC">HookOps Delivery Engine</text>
+    <text class="t-body" x="28" y="88" font-size="12" fill="#94A3B8">Absorbs all network latency, retries, and outages</text>
+
+    <line x1="28" y1="110" x2="412" y2="110" stroke="#1A2233" stroke-width="1"/>
+
+    <!-- 5 Clean Pillars -->
+    <g transform="translate(28, 136)">
+      <!-- Item 1 -->
+      <circle cx="8" cy="8" r="3" fill="#38BDF8"/>
+      <text class="t-sub" x="22" y="12" font-size="13" fill="#F8FAFC">PostgreSQL Queue</text>
+      <text class="t-mono" x="22" y="30" font-size="11.5" fill="#CBD5E1">FOR UPDATE SKIP LOCKED • Zero dual-writes</text>
+
+      <!-- Item 2 -->
+      <circle cx="8" cy="58" r="3" fill="#38BDF8"/>
+      <text class="t-sub" x="22" y="62" font-size="13" fill="#F8FAFC">Worker Pool &amp; Rate Limiter</text>
+      <text class="t-mono" x="22" y="80" font-size="11.5" fill="#CBD5E1">Bounded goroutines • Token Bucket per endpoint</text>
+
+      <!-- Item 3 -->
+      <circle cx="8" cy="108" r="3" fill="#38BDF8"/>
+      <text class="t-sub" x="22" y="112" font-size="13" fill="#F8FAFC">HMAC-SHA256 Signatures</text>
+      <text class="t-mono" x="22" y="130" font-size="11.5" fill="#CBD5E1">Payload signing + Timestamps + Event IDs</text>
+
+      <!-- Item 4 -->
+      <circle cx="8" cy="158" r="3" fill="#38BDF8"/>
+      <text class="t-sub" x="22" y="162" font-size="13" fill="#F8FAFC">Stepped Backoff + Jitter</text>
+      <text class="t-mono" x="22" y="180" font-size="11.5" fill="#CBD5E1">Prevents thundering herd on recovering servers</text>
+
+      <!-- Item 5 -->
+      <circle cx="8" cy="208" r="3" fill="#38BDF8"/>
+      <text class="t-sub" x="22" y="212" font-size="13" fill="#F8FAFC">Circuit Breakers &amp; DLQ</text>
+      <text class="t-mono" x="22" y="230" font-size="11.5" fill="#CBD5E1">Auto-disables toxic servers after 20 failures</text>
+    </g>
+  </g>
+
+  <!-- ARROW 2: Delivery -->
+  <g transform="translate(940, 350)">
+    <line x1="12" y1="0" x2="68" y2="0" stroke="#38BDF8" stroke-width="2" marker-end="url(#arr-blue)"/>
+    <text class="t-mono" x="40" y="-12" font-size="10" fill="#38BDF8" font-weight="600" text-anchor="middle">HTTP POST</text>
+    <text class="t-mono" x="40" y="18" font-size="9" fill="#94A3B8" text-anchor="middle">Signed Webhook</text>
+  </g>
+
+  <!-- CARD 3: CUSTOMER DESTINATIONS -->
+  <g transform="translate(1020, 140)">
+    <rect width="360" height="420" rx="8" fill="#111622" stroke="#1F283B" stroke-width="1.2"/>
+    
+    <text class="t-mono" x="24" y="36" font-size="11" fill="#38BDF8" font-weight="700" letter-spacing="1">STEP 03</text>
+    <text class="t-title" x="24" y="66" font-size="20" fill="#F8FAFC">Customer Servers</text>
+    <text class="t-body" x="24" y="88" font-size="12" fill="#94A3B8">Third-party webhook consumers</text>
+
+    <line x1="24" y1="110" x2="336" y2="110" stroke="#1A2233" stroke-width="1"/>
+
+    <!-- Outcome 1 -->
+    <g transform="translate(24, 136)">
+      <circle cx="8" cy="8" r="4" fill="#10B981"/>
+      <text class="t-sub" x="22" y="12" font-size="13" fill="#F8FAFC">200 OK (Delivered)</text>
+      <text class="t-body" x="22" y="30" font-size="11.5" fill="#CBD5E1">Signature verified • Task complete</text>
+    </g>
+
+    <!-- Outcome 2 -->
+    <g transform="translate(24, 214)">
+      <circle cx="8" cy="8" r="4" fill="#F59E0B"/>
+      <text class="t-sub" x="22" y="12" font-size="13" fill="#F8FAFC">5xx Outage (Retrying)</text>
+      <text class="t-mono" x="22" y="30" font-size="11.5" fill="#CBD5E1">30s → 2m → 10m → 1h → 4h with jitter</text>
+    </g>
+
+    <!-- Outcome 3 -->
+    <g transform="translate(24, 292)">
+      <circle cx="8" cy="8" r="4" fill="#EF4444"/>
+      <text class="t-sub" x="22" y="12" font-size="13" fill="#F8FAFC">Dead Server (Halted)</text>
+      <text class="t-body" x="22" y="30" font-size="11.5" fill="#CBD5E1">Circuit trips • Safely stored in DLQ</text>
+    </g>
+
+    <text class="t-mono" x="180" y="385" font-size="11" fill="#94A3B8" text-anchor="middle">Customer issues never hurt your app</text>
+  </g>
+
+  <!-- ==================== BOTTOM: 3 CLEAN OBSERVABILITY BLOCKS ==================== -->
+  <g transform="translate(60, 590)">
+    <text class="t-mono" x="0" y="18" font-size="11" fill="#38BDF8" font-weight="700" letter-spacing="1">04 / OBSERVABILITY &amp; REPLAY (DAY-2 OPERATIONS)</text>
+
+    <!-- Block 1: Audit Deliveries -->
+    <g transform="translate(0, 32)">
+      <rect width="420" height="85" rx="6" fill="#111622" stroke="#1F283B" stroke-width="1"/>
+      <text class="t-mono" x="20" y="28" font-size="13" fill="#38BDF8">GET /api/v1/deliveries/:id</text>
+      <text class="t-sub" x="20" y="48" font-size="12" fill="#F8FAFC">Delivery Audit Trail</text>
+      <text class="t-body" x="20" y="66" font-size="11.5" fill="#CBD5E1">Inspect status code, latency (ms), and response body</text>
+    </g>
+
+    <!-- Block 2: Telemetry -->
+    <g transform="translate(450, 32)">
+      <rect width="420" height="85" rx="6" fill="#111622" stroke="#1F283B" stroke-width="1"/>
+      <text class="t-mono" x="20" y="28" font-size="13" fill="#38BDF8">GET /api/v1/stats</text>
+      <text class="t-sub" x="20" y="48" font-size="12" fill="#F8FAFC">Aggregated Health &amp; Metrics</text>
+      <text class="t-body" x="20" y="66" font-size="11.5" fill="#CBD5E1">Real-time success rates, attempt counts &amp; queue depth</text>
+    </g>
+
+    <!-- Block 3: DLQ Replay -->
+    <g transform="translate(900, 32)">
+      <rect width="420" height="85" rx="6" fill="#111622" stroke="#1F283B" stroke-width="1"/>
+      <text class="t-mono" x="20" y="28" font-size="13" fill="#34D399">POST /api/v1/replay</text>
+      <text class="t-sub" x="20" y="48" font-size="12" fill="#F8FAFC">1-Click Batch DLQ Replay</text>
+      <text class="t-body" x="20" y="66" font-size="11.5" fill="#CBD5E1">When a customer fixes their server, re-deliver all missed events</text>
+    </g>
+  </g>
+
+  <!-- ==================== FOOTER ==================== -->
+  <g transform="translate(60, 775)">
+    <text class="t-mono" x="0" y="0" font-size="11" fill="#94A3B8">github.com/LanreAkintayo/hookops</text>
+    <text class="t-mono" x="1320" y="0" font-size="11" fill="#94A3B8" text-anchor="end">Engineered with Go &amp; PostgreSQL • MIT Licensed</text>
+  </g>
+</svg>

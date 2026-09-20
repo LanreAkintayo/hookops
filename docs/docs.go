@@ -10,7 +10,7 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Outpost Support"
+            "name": "HookOps Support"
         },
         "license": {
             "name": "MIT"
@@ -22,7 +22,7 @@ const docTemplate = `{
     "paths": {
         "/api/v1/applications": {
             "post": {
-                "description": "Register a new tenant application and generate an API key (op_live_...)",
+                "description": "Register a new tenant application and generate an API key (ho_live_...)",
                 "consumes": [
                     "application/json"
                 ],
@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateApplicationRequest"
                         }
                     }
                 ],
@@ -48,25 +48,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -96,25 +96,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -178,25 +178,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.PaginatedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -231,31 +231,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptDetailResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -290,31 +290,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -341,20 +341,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                                "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse"
                             }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -383,7 +383,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateEndpointRequest"
                         }
                     }
                 ],
@@ -391,25 +391,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -444,31 +444,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -505,7 +505,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.UpdateEndpointRequest"
                         }
                     }
                 ],
@@ -513,31 +513,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -570,25 +570,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -625,32 +625,32 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse"
+                                "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -687,7 +687,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateSubscriptionRequest"
                         }
                     }
                 ],
@@ -695,37 +695,37 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -768,25 +768,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -813,20 +813,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                                "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse"
                             }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -855,7 +855,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.CreateEventTypeRequest"
                         }
                     }
                 ],
@@ -863,31 +863,31 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -922,31 +922,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -979,25 +979,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1028,7 +1028,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.SendEventRequest"
                         }
                     }
                 ],
@@ -1036,31 +1036,31 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.IngestEventResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1095,31 +1095,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1156,26 +1156,26 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse"
+                                "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1213,7 +1213,7 @@ const docTemplate = `{
                         "name": "request",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ReplayEventRequest"
                         }
                     }
                 ],
@@ -1221,31 +1221,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.ReplayEventResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1276,7 +1276,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.BatchReplayRequest"
                         }
                     }
                 ],
@@ -1284,25 +1284,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.BatchReplayResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1327,19 +1327,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.StatsResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.StatsResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.ErrorResponse"
+                            "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.ErrorResponse"
                         }
                     }
                 }
@@ -1347,7 +1347,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_LanreAkintayo_outpost_internal_dto.ApplicationResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.ApplicationResponse": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -1367,7 +1367,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.BatchReplayRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.BatchReplayRequest": {
             "type": "object",
             "properties": {
                 "endpoint_id": {
@@ -1377,14 +1377,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus"
                 },
                 "to": {
                     "type": "string"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.BatchReplayResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.BatchReplayResponse": {
             "type": "object",
             "properties": {
                 "queued_deliveries": {
@@ -1395,7 +1395,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.CreateApplicationRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.CreateApplicationRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1408,7 +1408,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.CreateEndpointRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.CreateEndpointRequest": {
             "type": "object",
             "required": [
                 "url"
@@ -1432,7 +1432,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.CreateEventTypeRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.CreateEventTypeRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1447,7 +1447,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.CreateSubscriptionRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.CreateSubscriptionRequest": {
             "type": "object",
             "required": [
                 "event_type_id"
@@ -1458,7 +1458,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptDetailResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptDetailResponse": {
             "type": "object",
             "properties": {
                 "attempt_number": {
@@ -1492,14 +1492,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus"
                 },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptResponse": {
             "type": "object",
             "properties": {
                 "attempt_number": {
@@ -1530,14 +1530,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus"
                 },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary": {
+        "github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptSummary": {
             "type": "object",
             "properties": {
                 "attempt_number": {
@@ -1550,11 +1550,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.DeliveryStatsResponse": {
             "type": "object",
             "properties": {
                 "avg_latency_ms": {
@@ -1580,7 +1580,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EndpointHealthItem": {
             "type": "object",
             "properties": {
                 "consecutive_failures": {
@@ -1600,7 +1600,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EndpointResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EndpointResponse": {
             "type": "object",
             "properties": {
                 "application_id": {
@@ -1628,7 +1628,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.EndpointStatus"
                 },
                 "updated_at": {
                     "type": "string"
@@ -1638,7 +1638,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EndpointStatsResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -1650,7 +1650,7 @@ const docTemplate = `{
                 "summary": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointHealthItem"
+                        "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointHealthItem"
                     }
                 },
                 "total": {
@@ -1658,7 +1658,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EventResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EventResponse": {
             "type": "object",
             "properties": {
                 "application_id": {
@@ -1687,7 +1687,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EventStats": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EventStats": {
             "type": "object",
             "properties": {
                 "this_week": {
@@ -1701,7 +1701,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EventTypeResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EventTypeResponse": {
             "type": "object",
             "properties": {
                 "application_id": {
@@ -1724,7 +1724,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary": {
+        "github_com_LanreAkintayo_hookops_internal_dto.EventTypeSummary": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1738,7 +1738,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.IngestEventResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.IngestEventResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1764,7 +1764,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.ReplayEventRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.ReplayEventRequest": {
             "type": "object",
             "properties": {
                 "failed_only": {
@@ -1772,13 +1772,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.ReplayEventResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.ReplayEventResponse": {
             "type": "object",
             "properties": {
                 "attempts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryAttemptSummary"
+                        "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryAttemptSummary"
                     }
                 },
                 "event_id": {
@@ -1789,7 +1789,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.SendEventRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.SendEventRequest": {
             "type": "object",
             "required": [
                 "event_type",
@@ -1815,21 +1815,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.StatsResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.StatsResponse": {
             "type": "object",
             "properties": {
                 "deliveries": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.DeliveryStatsResponse"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.DeliveryStatsResponse"
                 },
                 "endpoints": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EndpointStatsResponse"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EndpointStatsResponse"
                 },
                 "events": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventStats"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventStats"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.SubscriptionResponse": {
+        "github_com_LanreAkintayo_hookops_internal_dto.SubscriptionResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1839,7 +1839,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "event_type": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_dto.EventTypeSummary"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_dto.EventTypeSummary"
                 },
                 "event_type_id": {
                     "type": "string"
@@ -1849,7 +1849,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_dto.UpdateEndpointRequest": {
+        "github_com_LanreAkintayo_hookops_internal_dto.UpdateEndpointRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1864,14 +1864,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_models.EndpointStatus"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_models.EndpointStatus"
                 },
                 "url": {
                     "type": "string"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_models.DeliveryStatus": {
+        "github_com_LanreAkintayo_hookops_internal_models.DeliveryStatus": {
             "type": "string",
             "enum": [
                 "pending",
@@ -1888,7 +1888,7 @@ const docTemplate = `{
                 "DeliveryStatusDeadLetter"
             ]
         },
-        "github_com_LanreAkintayo_outpost_internal_models.EndpointStatus": {
+        "github_com_LanreAkintayo_hookops_internal_models.EndpointStatus": {
             "type": "string",
             "enum": [
                 "active",
@@ -1899,7 +1899,7 @@ const docTemplate = `{
                 "EndpointStatusInactive"
             ]
         },
-        "github_com_LanreAkintayo_outpost_internal_response.ErrorResponse": {
+        "github_com_LanreAkintayo_hookops_internal_response.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -1907,16 +1907,16 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_response.PaginatedResponse": {
+        "github_com_LanreAkintayo_hookops_internal_response.PaginatedResponse": {
             "type": "object",
             "properties": {
                 "data": {},
                 "meta": {
-                    "$ref": "#/definitions/github_com_LanreAkintayo_outpost_internal_response.PaginationMeta"
+                    "$ref": "#/definitions/github_com_LanreAkintayo_hookops_internal_response.PaginationMeta"
                 }
             }
         },
-        "github_com_LanreAkintayo_outpost_internal_response.PaginationMeta": {
+        "github_com_LanreAkintayo_hookops_internal_response.PaginationMeta": {
             "type": "object",
             "properties": {
                 "page": {
@@ -1936,7 +1936,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "Enter your API key with the Bearer prefix, e.g. 'Bearer op_live_...'",
+            "description": "Enter your API key with the Bearer prefix, e.g. 'Bearer ho_live_...'",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -1950,7 +1950,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Outpost Webhook Delivery Engine API",
+	Title:            "HookOps Webhook Delivery Engine API",
 	Description:      "High-performance, fault-tolerant webhook delivery platform with exponential retries, rate limiting, HMAC signing, and dead-letter queues.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
