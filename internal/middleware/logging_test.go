@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
 )
 
 func TestRequestLoggerMiddleware(t *testing.T) {

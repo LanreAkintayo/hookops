@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/LanreAkintayo/outpost/internal/dto"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/response"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/dto"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/response"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 // ApplicationHandler handles HTTP requests for Application management.
@@ -33,7 +33,7 @@ func (h *ApplicationHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // Create handles POST /api/v1/applications
 // @Summary      Create application
-// @Description  Register a new tenant application and generate an API key (op_live_...)
+// @Description  Register a new tenant application and generate an API key (ho_live_...)
 // @Tags         Applications
 // @Accept       json
 // @Produce      json

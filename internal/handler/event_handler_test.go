@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/handler"
-	"github.com/LanreAkintayo/outpost/internal/middleware"
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/handler"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 var errEventInternalID = uuid.MustParse("99999999-9999-9999-9999-999999999999")

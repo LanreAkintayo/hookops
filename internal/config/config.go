@@ -35,7 +35,7 @@ type EngineConfig struct {
 	CircuitBreakerMaxFailures int
 }
 
-// Config represents the complete typed configuration for Outpost.
+// Config represents the complete typed configuration for HookOps.
 type Config struct {
 	Environment string
 	Server      ServerConfig
@@ -56,7 +56,7 @@ func Load() (*Config, error) {
 			Port:     getEnv("DB_PORT", "5433"),
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
-			DBName:   getEnv("DB_NAME", "outpost"),
+			DBName:   getEnv("DB_NAME", "hookops"),
 			SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 		},
 		Engine: EngineConfig{

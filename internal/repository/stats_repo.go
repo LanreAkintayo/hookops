@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/LanreAkintayo/outpost/internal/dto"
+	"github.com/LanreAkintayo/hookops/internal/dto"
 )
 
 // StatsRepository provides aggregate telemetry queries across events and delivery attempts.

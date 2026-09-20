@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/repository"
 )
 
 // business errors
@@ -19,7 +19,7 @@ var (
 	ErrInvalidName = errors.New("application name cannot be empty")
 )
 
-const apiKeyPrefix = "op_live_"
+const apiKeyPrefix = "ho_live_"
 
 // CreateApplicationParams holds the business parameters required to create an application.
 type CreateApplicationParams struct {
@@ -75,7 +75,7 @@ func (s *applicationService) GetApplicationByAPIKey(ctx context.Context, apiKey 
 	return s.repo.GetByAPIKey(ctx, apiKey)
 }
 
-// generateAPIKey generates a cryptographically secure random API key with the op_live_ prefix.
+// generateAPIKey generates a cryptographically secure random API key with the ho_live_ prefix.
 // We use crypto/rand (not math/rand) to ensure keys cannot be predicted or brute-forced.
 func generateAPIKey() (string, error) {
 	bytes := make([]byte, 24) // 24 bytes = 192 bits of entropy

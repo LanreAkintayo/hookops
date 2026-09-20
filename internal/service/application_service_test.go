@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 type mockAppRepo struct {
@@ -54,7 +54,7 @@ func (m *mockAppRepo) GetByAPIKey(ctx context.Context, key string) (*models.Appl
 func TestApplicationService(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("successfully creates an application with op_live_ key", func(t *testing.T) {
+	t.Run("successfully creates an application with ho_live_ key", func(t *testing.T) {
 		repo := newMockAppRepo()
 		svc := service.NewApplicationService(repo)
 
@@ -65,7 +65,7 @@ func TestApplicationService(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, app)
 		assert.Equal(t, "Stripe Store", app.Name)
-		assert.True(t, strings.HasPrefix(app.APIKey, "op_live_"))
+		assert.True(t, strings.HasPrefix(app.APIKey, "ho_live_"))
 		assert.NotEqual(t, uuid.Nil, app.ID)
 	})
 

@@ -10,10 +10,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/middleware"
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 func init() {
@@ -44,7 +44,7 @@ func TestAuthenticateAPIKey(t *testing.T) {
 	validApp := &models.Application{
 		ID:     uuid.New(),
 		Name:   "Shopify Store",
-		APIKey: "op_live_valid_test_key_12345",
+		APIKey: "ho_live_valid_test_key_12345",
 	}
 
 	mockSvc := &mockAuthService{
@@ -84,7 +84,7 @@ func TestAuthenticateAPIKey(t *testing.T) {
 	t.Run("fails when header format is not Bearer", func(t *testing.T) {
 		r := setupRouter()
 		req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
-		req.Header.Set("Authorization", "Basic op_live_valid_test_key_12345")
+		req.Header.Set("Authorization", "Basic ho_live_valid_test_key_12345")
 		rec := httptest.NewRecorder()
 
 		r.ServeHTTP(rec, req)
@@ -108,7 +108,7 @@ func TestAuthenticateAPIKey(t *testing.T) {
 	t.Run("fails when api key is not found in database", func(t *testing.T) {
 		r := setupRouter()
 		req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
-		req.Header.Set("Authorization", "Bearer op_live_unknown_key")
+		req.Header.Set("Authorization", "Bearer ho_live_unknown_key")
 		rec := httptest.NewRecorder()
 
 		r.ServeHTTP(rec, req)
@@ -120,7 +120,7 @@ func TestAuthenticateAPIKey(t *testing.T) {
 	t.Run("succeeds with valid Bearer token and attaches app to context", func(t *testing.T) {
 		r := setupRouter()
 		req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
-		req.Header.Set("Authorization", "Bearer op_live_valid_test_key_12345")
+		req.Header.Set("Authorization", "Bearer ho_live_valid_test_key_12345")
 		rec := httptest.NewRecorder()
 
 		r.ServeHTTP(rec, req)

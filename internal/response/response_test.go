@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/response"
+	"github.com/LanreAkintayo/hookops/internal/response"
 )
 
 func init() {

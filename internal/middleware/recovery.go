@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 
-	"github.com/LanreAkintayo/outpost/internal/response"
+	"github.com/LanreAkintayo/hookops/internal/response"
 )
 
 // Recovery returns a Gin middleware that intercepts unexpected panics,

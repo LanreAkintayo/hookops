@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/LanreAkintayo/outpost/internal/dto"
-	"github.com/LanreAkintayo/outpost/internal/middleware"
-	"github.com/LanreAkintayo/outpost/internal/response"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/dto"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/response"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 // DeliveryHandler handles HTTP requests for inspecting and manually retrying webhook delivery attempts.

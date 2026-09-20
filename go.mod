@@ -1,4 +1,4 @@
-module github.com/LanreAkintayo/outpost
+module github.com/LanreAkintayo/hookops
 
 go 1.26.5
 

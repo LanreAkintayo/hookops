@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ErrorResponse represents the standardized JSON error contract for Outpost.
+// ErrorResponse represents the standardized JSON error contract for HookOps.
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

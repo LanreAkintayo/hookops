@@ -11,9 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/handler"
-	"github.com/LanreAkintayo/outpost/internal/middleware"
-	"github.com/LanreAkintayo/outpost/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/handler"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/models"
 )
 
 func TestAuthHandler_Verify_Success(t *testing.T) {

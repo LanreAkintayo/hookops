@@ -11,29 +11,29 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/LanreAkintayo/outpost/internal/config"
-	"github.com/LanreAkintayo/outpost/internal/database"
-	"github.com/LanreAkintayo/outpost/internal/engine"
-	"github.com/LanreAkintayo/outpost/internal/handler"
-	"github.com/LanreAkintayo/outpost/internal/logger"
-	"github.com/LanreAkintayo/outpost/internal/middleware"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/router"
-	"github.com/LanreAkintayo/outpost/internal/server"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/config"
+	"github.com/LanreAkintayo/hookops/internal/database"
+	"github.com/LanreAkintayo/hookops/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/handler"
+	"github.com/LanreAkintayo/hookops/internal/logger"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/router"
+	"github.com/LanreAkintayo/hookops/internal/server"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
-// @title           Outpost Webhook Delivery Engine API
+// @title           HookOps Webhook Delivery Engine API
 // @version         1.0
 // @description     High-performance, fault-tolerant webhook delivery platform with exponential retries, rate limiting, HMAC signing, and dead-letter queues.
-// @contact.name    Outpost Support
+// @contact.name    HookOps Support
 // @license.name    MIT
 
 // @BasePath        /
 // @securityDefinitions.apikey BearerAuth
 // @in              header
 // @name            Authorization
-// @description     Enter your API key with the Bearer prefix, e.g. 'Bearer op_live_...'
+// @description     Enter your API key with the Bearer prefix, e.g. 'Bearer ho_live_...'
 
 func main() {
 	// Load local .env file (if present)
@@ -152,7 +152,7 @@ func main() {
 		}
 	}()
 
-	// 4. Graceful Shutdown Pipeline
+	// Graceful Shutdown Pipeline
 	// Orchestrate teardown in reverse dependency order:
 	// Ingress (HTTP) -> Polling (Dispatcher) -> Egress (Worker Pool) -> Storage (DB Pool).
 	quit := make(chan os.Signal, 1)
@@ -198,5 +198,5 @@ func main() {
 	log.Info().Msg("phase 4: closing database connection pool...")
 	dbPool.Close()
 
-	log.Info().Msg("outpost shutdown complete: server exited cleanly")
+	log.Info().Msg("hookops shutdown complete: server exited cleanly")
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Application represents a registered tenant organization in Outpost.
+// Application represents a registered tenant organization in HookOps.
 // This domain model mirrors the database schema in PostgreSQL.
 type Application struct {
 	ID        uuid.UUID `json:"id" db:"id"`

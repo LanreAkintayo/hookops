@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/config"
+	"github.com/LanreAkintayo/hookops/internal/config"
 )
 
 func TestConfig_Load_Defaults(t *testing.T) {
@@ -40,7 +40,7 @@ func TestConfig_Load_Defaults(t *testing.T) {
 	assert.Equal(t, "5433", cfg.Database.Port)
 	assert.Equal(t, "postgres", cfg.Database.User)
 	assert.Equal(t, "postgres", cfg.Database.Password)
-	assert.Equal(t, "outpost", cfg.Database.DBName)
+	assert.Equal(t, "hookops", cfg.Database.DBName)
 	assert.Equal(t, "disable", cfg.Database.SSLMode)
 
 	assert.Equal(t, 5, cfg.Engine.WorkerCount)
@@ -61,7 +61,7 @@ func TestConfig_Load_CustomEnv(t *testing.T) {
 	t.Setenv("DB_PORT", "5432")
 	t.Setenv("DB_USER", "custom_user")
 	t.Setenv("DB_PASSWORD", "secret123")
-	t.Setenv("DB_NAME", "outpost_prod")
+	t.Setenv("DB_NAME", "hookops_prod")
 	t.Setenv("DB_SSL_MODE", "require")
 	t.Setenv("WORKER_COUNT", "10")
 	t.Setenv("QUEUE_SIZE", "500")
@@ -82,7 +82,7 @@ func TestConfig_Load_CustomEnv(t *testing.T) {
 	assert.Equal(t, "5432", cfg.Database.Port)
 	assert.Equal(t, "custom_user", cfg.Database.User)
 	assert.Equal(t, "secret123", cfg.Database.Password)
-	assert.Equal(t, "outpost_prod", cfg.Database.DBName)
+	assert.Equal(t, "hookops_prod", cfg.Database.DBName)
 	assert.Equal(t, "require", cfg.Database.SSLMode)
 
 	assert.Equal(t, 10, cfg.Engine.WorkerCount)

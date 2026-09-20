@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/middleware"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
 )
 
 func TestCORS_Preflight(t *testing.T) {

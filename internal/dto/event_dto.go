@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/LanreAkintayo/outpost/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/models"
 )
 
 // SendEventRequest represents the incoming JSON payload to ingest a new webhook event.

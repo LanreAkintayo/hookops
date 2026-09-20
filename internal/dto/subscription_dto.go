@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/LanreAkintayo/outpost/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/models"
 )
 
 // CreateSubscriptionRequest defines the expected JSON payload for subscribing an endpoint to an event type.

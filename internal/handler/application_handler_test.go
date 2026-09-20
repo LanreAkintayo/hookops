@@ -15,11 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/dto"
-	"github.com/LanreAkintayo/outpost/internal/handler"
-	"github.com/LanreAkintayo/outpost/internal/models"
-	"github.com/LanreAkintayo/outpost/internal/repository"
-	"github.com/LanreAkintayo/outpost/internal/service"
+	"github.com/LanreAkintayo/hookops/internal/dto"
+	"github.com/LanreAkintayo/hookops/internal/handler"
+	"github.com/LanreAkintayo/hookops/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/repository"
+	"github.com/LanreAkintayo/hookops/internal/service"
 )
 
 type mockApplicationService struct {
@@ -46,7 +46,7 @@ func (m *mockApplicationService) CreateApplication(ctx context.Context, params s
 	app := &models.Application{
 		ID:        uuid.New(),
 		Name:      params.Name,
-		APIKey:    "op_live_mock1234567890abcdef",
+		APIKey:    "ho_live_mock1234567890abcdef",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -102,7 +102,7 @@ func TestApplicationHandler_Create(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, resp.ID)
 		assert.Equal(t, "Acme Corp", resp.Name)
-		assert.Equal(t, "op_live_mock1234567890abcdef", resp.APIKey)
+		assert.Equal(t, "ho_live_mock1234567890abcdef", resp.APIKey)
 	})
 
 	t.Run("rejects malformed JSON body", func(t *testing.T) {

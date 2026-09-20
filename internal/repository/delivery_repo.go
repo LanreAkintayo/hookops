@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
-	"github.com/LanreAkintayo/outpost/internal/models"
+	"github.com/LanreAkintayo/hookops/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/models"
 )
 
 var (

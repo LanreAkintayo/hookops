@@ -7,7 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/LanreAkintayo/outpost/internal/config"
+	"github.com/LanreAkintayo/hookops/internal/config"
 )
 
 // Server manages the lifecycle of the HTTP listener (start & graceful shutdown).
