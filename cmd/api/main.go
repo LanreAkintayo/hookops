@@ -45,7 +45,7 @@ func main() {
 		panic("fatal: failed to load configuration: " + err.Error())
 	}
 
-	// Initialize structured logger (Dependency Injected)
+	// Logger
 	log := logger.New(cfg.Environment)
 	log.Info().
 		Str("environment", cfg.Environment).
@@ -66,7 +66,7 @@ func main() {
 
 	log.Info().Msg("database connection pool initialized and ping verified")
 
-	// Wire Dependencies (Dependency Injection)
+	// Repositories & services
 	appRepo := repository.NewPostgresApplicationRepository(dbPool)
 	appService := service.NewApplicationService(appRepo)
 	appHandler := handler.NewApplicationHandler(appService)
@@ -91,7 +91,7 @@ func main() {
 	eventService := service.NewEventService(eventRepo, eventTypeRepo, subscriptionRepo, deliveryRepo)
 	eventHandler := handler.NewEventHandler(eventService)
 
-	// Wire Webhook Delivery Engine (Deliverer, WorkerPool, Dispatcher)
+	// Delivery engine: deliverer -> worker pool -> dispatcher
 	deliverer := engine.NewHTTPDeliverer(30 * time.Second)
 
 	retryCfg := engine.RetryConfig{
@@ -131,7 +131,7 @@ func main() {
 	statsService := service.NewStatsService(statsRepo, endpointRepo)
 	statsHandler := handler.NewStatsHandler(statsService)
 
-	// Build HTTP Router (Routing & Middlewares)
+	// Router
 	r := router.New(router.RouterParams{
 		Config:          cfg,
 		Logger:          log,
@@ -141,10 +141,10 @@ func main() {
 		ProtectedRoutes: []router.RouteRegistrar{authHandler, endpointHandler, eventTypeHandler, subscriptionHandler, eventHandler, deliveryHandler, statsHandler},
 	})
 
-	// Initialize HTTP Server (Transport Lifecycle)
+	// Server
 	srv := server.New(cfg, log, r)
 
-	// Start HTTP Server in a background goroutine
+	// Start server in background
 	go func() {
 		log.Info().Str("port", cfg.Server.Port).Msg("starting HTTP server")
 		if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -152,18 +152,14 @@ func main() {
 		}
 	}()
 
-	// Graceful Shutdown Pipeline
-	// Orchestrate teardown in reverse dependency order:
-	// Ingress (HTTP) -> Polling (Dispatcher) -> Egress (Worker Pool) -> Storage (DB Pool).
+	// Graceful shutdown in reverse dependency order: HTTP -> Dispatcher -> Workers -> DB
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-quit
 	log.Info().Str("signal", sig.String()).Msg("shutdown signal received, initiating graceful teardown...")
 
-	// Phase 1: Ingress Shutdown
-	// Stop accepting new HTTP requests and let in-flight client requests finish.
-	// Isolated 5-second deadline prevents slow clients from consuming worker drain budget.
+	// Stop HTTP ingress (5s deadline for in-flight requests)
 	log.Info().Msg("phase 1: shutting down HTTP server...")
 	httpShutdownCtx, httpCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	if err := srv.Shutdown(httpShutdownCtx); err != nil {
@@ -173,16 +169,11 @@ func main() {
 	}
 	httpCancel()
 
-	// Phase 2: Polling Shutdown
-	// Stop the background ticker and wait for the current DB polling cycle to finish.
-	// No new tasks will be claimed or pushed to the worker pool queue.
+	// Stop dispatcher polling (finishes current batch, stops claiming new tasks)
 	log.Info().Msg("phase 2: stopping webhook dispatcher...")
 	dispatcher.Stop()
 
-	// Phase 3: Egress Shutdown
-	// Drain tasks in the worker pool queue and wait for in-flight HTTP webhook deliveries
-	// to complete and record their outcomes to Postgres.
-	// Dedicated 15-second budget ensures slow third-party endpoints have time to respond.
+	// Drain worker pool (15s budget for in-flight HTTP deliveries to complete)
 	log.Info().Msg("phase 3: draining worker pool...")
 	workerShutdownCtx, workerCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	if err := workerPool.Shutdown(workerShutdownCtx); err != nil {
@@ -192,9 +183,7 @@ func main() {
 	}
 	workerCancel()
 
-	// Phase 4: Storage Shutdown
-	// All HTTP handlers, dispatcher queries, and worker database writes are done.
-	// Safe to close the database pool cleanly.
+	// Close database pool once all workers and handlers are done
 	log.Info().Msg("phase 4: closing database connection pool...")
 	dbPool.Close()
 
