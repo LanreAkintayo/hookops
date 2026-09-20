@@ -15,11 +15,11 @@ HookOps accepts webhook events from your application, queues them in PostgreSQL,
 
 ![HookOps Webhook Workflow](assets/workflow.png)
 
-HookOps handles the full lifecycle of outbound webhooks. Your app publishes an event, HookOps fans it out to every subscribed endpoint, signs each payload, delivers it, and deals with failures along the way: retries with backoff, per-endpoint rate limiting, dead-letter queues, circuit breakers.
+HookOps handles the full lifecycle of outbound webhooks. Your app publishes an event, HookOps fans it out to every subscribed endpoint, signs each payload, delivers it, and deals with failures along the way.
 
 Where it goes further is recovery. When an endpoint crosses the failure threshold and gets disabled, HookOps doesn't just leave it there. It periodically probes the endpoint and re-enables it automatically once it starts responding again. No one has to remember to go flip it back on.
 
-The entire system runs on Go and PostgreSQL. No Redis, no Kafka, no external message broker. PostgreSQL handles both storage and job queuing via `SKIP LOCKED`.
+The entire system runs on Go and PostgreSQL. PostgreSQL handles both storage and job queuing via `SKIP LOCKED`.
 
 ---
 
