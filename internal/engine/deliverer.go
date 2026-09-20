@@ -21,15 +21,15 @@ const (
 	// DefaultMaxResponseBodyBytes is the maximum number of response body bytes captured (4 KB).
 	DefaultMaxResponseBodyBytes int64 = 4096
 
-	// WebhookUserAgent identifies Outpost as the sending delivery engine.
-	WebhookUserAgent = "Outpost-Webhook-Engine/1.0"
+	// WebhookUserAgent identifies HookOps as the sending delivery engine.
+	WebhookUserAgent = "HookOps-Webhook-Engine/1.0"
 
 	// Outbound HTTP header names.
 	HeaderContentType = "Content-Type"
-	HeaderEvent       = "X-Outpost-Event"
-	HeaderEventID     = "X-Outpost-Event-ID"
-	HeaderTimestamp   = "X-Outpost-Timestamp"
-	HeaderSignature   = "X-Outpost-Signature"
+	HeaderEvent       = "X-HookOps-Event"
+	HeaderEventID     = "X-HookOps-Event-ID"
+	HeaderTimestamp   = "X-HookOps-Timestamp"
+	HeaderSignature   = "X-HookOps-Signature"
 	HeaderUserAgent   = "User-Agent"
 )
 

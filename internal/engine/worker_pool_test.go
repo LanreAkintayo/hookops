@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/engine"
 )
 
 type mockDelivererFunc func(ctx context.Context, req engine.DeliveryRequest) *engine.DeliveryResult

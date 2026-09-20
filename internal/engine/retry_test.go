@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/engine"
 )
 
 func TestCalculateNextRetry_BaseProgression(t *testing.T) {

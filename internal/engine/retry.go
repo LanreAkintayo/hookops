@@ -95,13 +95,6 @@ func CalculateNextRetryWithRandom(attemptNumber int, cfg RetryConfig, randFn fun
 }
 
 // IsRetryable determines whether a failed webhook delivery attempt should be retried.
-//
-// Rules:
-// - Network errors / timeouts (httpStatus == nil): RETRYABLE (true)
-// - HTTP 429 Too Many Requests: RETRYABLE (true)
-// - HTTP 4xx Client Errors (400, 401, 403, 404, 422, etc.): NON-RETRYABLE (false)
-// - HTTP 5xx Server Errors (500, 502, 503, 504): RETRYABLE (true)
-// - Any other status: NON-RETRYABLE (false)
 func IsRetryable(httpStatus *int) bool {
 	if httpStatus == nil {
 		return true // Network error, DNS failure, or timeout

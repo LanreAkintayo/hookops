@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/engine"
 )
 
 func TestHTTPDeliverer_Success(t *testing.T) {
@@ -66,13 +66,13 @@ func TestHTTPDeliverer_Success(t *testing.T) {
 
 	// Assert Headers received by customer server
 	assert.Equal(t, "application/json", receivedHeaders.Get("Content-Type"))
-	assert.Equal(t, eventType, receivedHeaders.Get("X-Outpost-Event"))
-	assert.Equal(t, eventID.String(), receivedHeaders.Get("X-Outpost-Event-ID"))
-	assert.Equal(t, strconv.FormatInt(fixedTime.Unix(), 10), receivedHeaders.Get("X-Outpost-Timestamp"))
+	assert.Equal(t, eventType, receivedHeaders.Get("X-HookOps-Event"))
+	assert.Equal(t, eventID.String(), receivedHeaders.Get("X-HookOps-Event-ID"))
+	assert.Equal(t, strconv.FormatInt(fixedTime.Unix(), 10), receivedHeaders.Get("X-HookOps-Timestamp"))
 	assert.Equal(t, engine.WebhookUserAgent, receivedHeaders.Get("User-Agent"))
 
 	// Verify cryptographic HMAC signature received by the customer
-	sigHeader := receivedHeaders.Get("X-Outpost-Signature")
+	sigHeader := receivedHeaders.Get("X-HookOps-Signature")
 	require.NotEmpty(t, sigHeader)
 	assert.True(t, engine.Verify(receivedBody, secret, sigHeader), "signature sent over HTTP must be valid")
 	assert.Equal(t, payload, receivedBody)

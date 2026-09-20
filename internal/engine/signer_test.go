@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/LanreAkintayo/outpost/internal/engine"
+	"github.com/LanreAkintayo/hookops/internal/engine"
 )
 
 func TestSign_KnownRFC4231Vector(t *testing.T) {

@@ -10,9 +10,9 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "github.com/LanreAkintayo/outpost/docs"
-	"github.com/LanreAkintayo/outpost/internal/config"
-	"github.com/LanreAkintayo/outpost/internal/middleware"
+	_ "github.com/LanreAkintayo/hookops/docs"
+	"github.com/LanreAkintayo/hookops/internal/config"
+	"github.com/LanreAkintayo/hookops/internal/middleware"
 )
 
 // DatabasePinger defines an interface for verifying database connectivity.
@@ -55,7 +55,7 @@ func New(params RouterParams) *gin.Engine {
 			if err := params.DBPinger.Ping(pingCtx); err != nil {
 				c.JSON(http.StatusServiceUnavailable, gin.H{
 					"status":   "unhealthy",
-					"service":  "outpost",
+					"service":  "hookops",
 					"database": "unreachable",
 					"error":    err.Error(),
 				})
@@ -66,7 +66,7 @@ func New(params RouterParams) *gin.Engine {
 
 		c.JSON(http.StatusOK, gin.H{
 			"status":   "healthy",
-			"service":  "outpost",
+			"service":  "hookops",
 			"database": dbStatus,
 		})
 	})

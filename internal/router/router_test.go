@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/LanreAkintayo/outpost/internal/config"
-	"github.com/LanreAkintayo/outpost/internal/router"
+	"github.com/LanreAkintayo/hookops/internal/config"
+	"github.com/LanreAkintayo/hookops/internal/router"
 )
 
 type mockRegistrar struct {
@@ -52,7 +52,7 @@ func TestHealthCheck(t *testing.T) {
 	r.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.JSONEq(t, `{"service":"outpost","status":"healthy","database":"disabled"}`, rec.Body.String())
+	assert.JSONEq(t, `{"service":"hookops","status":"healthy","database":"disabled"}`, rec.Body.String())
 	assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
 
 	// 2. With healthy DBPinger
@@ -64,7 +64,7 @@ func TestHealthCheck(t *testing.T) {
 	rHealthy.ServeHTTP(recHealthy, req)
 
 	assert.Equal(t, http.StatusOK, recHealthy.Code)
-	assert.JSONEq(t, `{"service":"outpost","status":"healthy","database":"connected"}`, recHealthy.Body.String())
+	assert.JSONEq(t, `{"service":"hookops","status":"healthy","database":"connected"}`, recHealthy.Body.String())
 
 	// 3. With failing DBPinger -> 503
 	rFailing := router.New(router.RouterParams{
@@ -164,6 +164,6 @@ func TestSwaggerDocs(t *testing.T) {
 	r.ServeHTTP(recDoc, reqDoc)
 
 	assert.Equal(t, http.StatusOK, recDoc.Code)
-	assert.Contains(t, recDoc.Body.String(), "Outpost Webhook Delivery Engine API")
+	assert.Contains(t, recDoc.Body.String(), "HookOps Webhook Delivery Engine API")
 }
 
