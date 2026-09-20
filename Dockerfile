@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Outpost
+# Multi-stage Dockerfile for HookOps
 
 # Stage 1: Build stage with full Go toolchain
 FROM golang:alpine AS builder
@@ -26,11 +26,11 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata
 
 # Run as non-root user for security
-RUN addgroup -S outpost && adduser -S outpost -G outpost
+RUN addgroup -S hookops && adduser -S hookops -G hookops
 
 COPY --from=builder /app/bin/api /app/api
 
-USER outpost
+USER hookops
 
 EXPOSE 8080
 
